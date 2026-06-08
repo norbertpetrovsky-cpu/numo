@@ -1231,6 +1231,34 @@
   .lp-chip.selected { border-color: var(--accent); background: rgba(0,212,170,0.1); color: var(--accent); }
   .lp-chip i { font-size: 16px; }
 
+  .landing-brand {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 8px; margin-bottom: 28px;
+  }
+  .landing-brand-icon {
+    width: 72px; height: 72px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 18px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 32px; color: #000;
+    margin-bottom: 4px;
+    box-shadow: 0 0 40px rgba(0,212,170,0.2);
+  }
+  .landing-brand-name {
+    font-family: 'Syne', sans-serif; font-weight: 800;
+    font-size: clamp(56px, 10vw, 96px);
+    line-height: 1; letter-spacing: -0.03em;
+    background: linear-gradient(135deg, var(--text) 40%, var(--text2) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .landing-brand-tag {
+    font-family: 'Syne', sans-serif; font-weight: 500;
+    font-size: clamp(16px, 2.5vw, 22px);
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    letter-spacing: 0.01em;
+  }
+
   .landing-profile-label {
     font-size: 12px; color: var(--text3); text-align: center;
     margin-bottom: 16px; font-family: 'DM Mono', monospace;
@@ -1556,8 +1584,10 @@
       Slovensko · Daňové priznanie 2025
     </div>
 
-    <div class="landing-h1">
-      Tvoje financie,<br><span class="hl">jasne.</span>
+    <div class="landing-brand">
+      <div class="landing-brand-icon">N</div>
+      <div class="landing-brand-name">Numo</div>
+      <div class="landing-brand-tag">Tvoje financie, jasne.</div>
     </div>
 
     <div class="landing-moto">

@@ -1,0 +1,3387 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Numo — Tvoje financie, jasne</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root {
+    --bg: #0a0c10;
+    --surface: #111418;
+    --surface2: #181c22;
+    --border: #1e2530;
+    --border2: #252d3a;
+    --accent: #00d4aa;
+    --accent2: #0099ff;
+    --accent3: #ff6b35;
+    --text: #e8ecf0;
+    --text2: #8a97a8;
+    --text3: #4a5568;
+    --green: #00c97a;
+    --red: #ff4d6d;
+    --yellow: #ffc443;
+    --radius: 10px;
+    --radius-lg: 16px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 32px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 13px;
+    color: #000;
+    letter-spacing: -0.5px;
+  }
+  .logo-text {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--text);
+  }
+  .logo-sub {
+    font-size: 11px;
+    color: var(--text2);
+    font-weight: 400;
+  }
+  .header-badge {
+    background: rgba(0,212,170,0.1);
+    border: 1px solid rgba(0,212,170,0.25);
+    color: var(--accent);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+  }
+
+  /* ── STEPS NAV ── */
+  .steps-bar {
+    display: flex;
+    align-items: center;
+    padding: 0 32px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    gap: 0;
+    overflow-x: auto;
+  }
+  .step-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 20px;
+    cursor: default;
+    white-space: nowrap;
+    opacity: 0.35;
+    transition: opacity 0.2s;
+    position: relative;
+  }
+  .step-item.active { opacity: 1; }
+  .step-item.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+  }
+  .step-item.done { opacity: 0.6; }
+  .step-num {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 1.5px solid var(--text3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+  .step-item.active .step-num {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #000;
+    font-weight: 700;
+  }
+  .step-item.done .step-num {
+    background: var(--surface2);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .step-label { font-size: 12px; font-weight: 500; }
+  .step-sep {
+    width: 20px; height: 1px;
+    background: var(--border2);
+    flex-shrink: 0;
+  }
+
+  /* ── MAIN LAYOUT ── */
+  .main { padding: 32px; max-width: 1400px; margin: 0 auto; }
+
+  /* ── UPLOAD ZONE ── */
+  .upload-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 160px);
+    gap: 32px;
+  }
+  .upload-hero {
+    text-align: center;
+  }
+  .upload-hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 42px;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 12px;
+    background: linear-gradient(135deg, var(--text) 0%, var(--text2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .upload-hero h1 span {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+  .upload-hero p {
+    color: var(--text2);
+    font-size: 15px;
+    max-width: 480px;
+    line-height: 1.6;
+    margin: 0 auto;
+  }
+
+  .drop-zone {
+    width: 100%;
+    max-width: 560px;
+    border: 2px dashed var(--border2);
+    border-radius: var(--radius-lg);
+    padding: 48px 32px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s;
+    background: var(--surface);
+    position: relative;
+    overflow: hidden;
+  }
+  .drop-zone::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(0,212,170,0.04) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .drop-zone:hover, .drop-zone.dragover {
+    border-color: var(--accent);
+    background: rgba(0,212,170,0.04);
+  }
+  .drop-zone.dragover { transform: scale(1.01); }
+
+  .drop-icon {
+    width: 56px; height: 56px;
+    margin: 0 auto 16px;
+    background: var(--surface2);
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    border: 1px solid var(--border2);
+  }
+  .drop-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .drop-sub { color: var(--text2); font-size: 13px; margin-bottom: 20px; }
+
+  .btn-upload {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 8px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-upload:hover { background: #00efc0; transform: translateY(-1px); }
+
+  #fileInput { display: none; }
+
+  .upload-hints {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 560px;
+  }
+  .hint-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 12px;
+    color: var(--text2);
+  }
+  .hint-chip-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+
+  /* ── LOADING ── */
+  .loading-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(10,12,16,0.85);
+    backdrop-filter: blur(8px);
+    z-index: 999;
+    align-items: center; justify-content: center;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .loading-overlay.show { display: flex; }
+  .spinner {
+    width: 48px; height: 48px;
+    border: 3px solid var(--border2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--text2);
+  }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px;
+    max-width: 360px;
+    z-index: 9999;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.error { border-color: rgba(255,77,109,0.4); }
+  .toast.success { border-color: rgba(0,201,122,0.4); }
+  .toast-icon { font-size: 16px; flex-shrink: 0; }
+
+  /* ── DASHBOARD ── */
+  #dashboard { display: none; }
+  #dashboard.show { display: block; }
+
+  .dash-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .dash-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 24px;
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+  .dash-meta { color: var(--text2); font-size: 13px; display: flex; gap: 16px; flex-wrap: wrap; }
+  .dash-meta span { display: flex; align-items: center; gap: 6px; }
+
+  .btn-reset {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    color: var(--text2);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn-reset:hover { border-color: var(--text3); color: var(--text); }
+
+  /* ── SUMMARY CARDS ── */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .summary-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .summary-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .summary-card.green::before { background: var(--green); }
+  .summary-card.red::before { background: var(--red); }
+  .summary-card.blue::before { background: var(--accent2); }
+  .summary-card.yellow::before { background: var(--yellow); }
+  .summary-card.cyan::before { background: var(--accent); }
+
+  .card-label {
+    font-size: 11px;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 500;
+    margin-bottom: 10px;
+    font-family: 'DM Mono', monospace;
+  }
+  .card-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .card-value.pos { color: var(--green); }
+  .card-value.neg { color: var(--red); }
+  .card-sub { font-size: 11px; color: var(--text3); }
+
+  /* ── SECTION PANELS ── */
+  .section-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    cursor: pointer;
+    user-select: none;
+    border-bottom: 1px solid transparent;
+    transition: background 0.15s;
+  }
+  .section-header:hover { background: var(--surface2); }
+  .section-header.open { border-bottom-color: var(--border); }
+
+  .section-title-wrap { display: flex; align-items: center; gap: 12px; }
+  .section-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .section-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text2);
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    padding: 2px 8px;
+    border-radius: 12px;
+  }
+  .section-arrow {
+    color: var(--text3);
+    font-size: 12px;
+    transition: transform 0.2s;
+  }
+  .section-header.open .section-arrow { transform: rotate(180deg); }
+
+  .section-body {
+    display: none;
+    overflow-x: auto;
+    padding: 0;
+  }
+  .section-body.open { display: block; }
+
+  /* ── TABLE ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  thead th {
+    background: var(--surface2);
+    color: var(--text2);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 10px 14px;
+    text-align: left;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+  }
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--surface2); }
+  tbody td {
+    padding: 9px 14px;
+    color: var(--text);
+    white-space: nowrap;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+  }
+  td.symbol {
+    font-weight: 500;
+    color: var(--accent2);
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+  }
+  td.pos { color: var(--green); }
+  td.neg { color: var(--red); }
+  td.type-buy { color: var(--green); font-weight: 500; }
+  td.type-sell { color: var(--red); font-weight: 500; }
+  td.neutral { color: var(--text2); }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    padding: 40px;
+    text-align: center;
+    color: var(--text3);
+    font-size: 13px;
+  }
+  .empty-state-icon { font-size: 28px; margin-bottom: 10px; opacity: 0.4; }
+
+  /* ── STATUS CHIPS ── */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 600;
+    font-family: 'DM Mono', monospace;
+    text-transform: uppercase;
+  }
+  .chip.open { background: rgba(255,196,67,0.12); color: var(--yellow); border: 1px solid rgba(255,196,67,0.2); }
+  .chip.closed { background: rgba(0,201,122,0.1); color: var(--green); border: 1px solid rgba(0,201,122,0.2); }
+
+  /* ── NOTICE BOX ── */
+  .notice {
+    display: flex;
+    gap: 12px;
+    background: rgba(0,153,255,0.07);
+    border: 1px solid rgba(0,153,255,0.2);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 24px;
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.6;
+  }
+  .notice-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── STEP FOOTER ── */
+  .step-footer {
+    margin-top: 32px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+  }
+  .btn-next {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    padding: 11px 24px;
+    border-radius: 8px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    opacity: 0.4;
+    pointer-events: none;
+  }
+  .btn-next.ready { opacity: 1; pointer-events: all; }
+  .btn-next.ready:hover { background: #00efc0; transform: translateY(-1px); }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .fade-up { animation: fadeUp 0.4s ease forwards; }
+  .fade-up-1 { animation-delay: 0.05s; opacity: 0; }
+  .fade-up-2 { animation-delay: 0.1s; opacity: 0; }
+  .fade-up-3 { animation-delay: 0.15s; opacity: 0; }
+  .fade-up-4 { animation-delay: 0.2s; opacity: 0; }
+
+  /* ── TAB BAR (inside dashboard) ── */
+  .dash-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 4px;
+    width: fit-content;
+  }
+  .dash-tab {
+    padding: 7px 18px;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: 'Syne', sans-serif;
+    cursor: pointer;
+    color: var(--text2);
+    transition: all 0.2s;
+    border: none;
+    background: transparent;
+    white-space: nowrap;
+  }
+  .dash-tab.active {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border2);
+  }
+  .dash-tab:hover:not(.active) { color: var(--text); }
+
+  /* ── CALC SCREEN ── */
+  #calcScreen { display: none; }
+  #calcScreen.show { display: block; }
+
+  .calc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 900px) { .calc-grid { grid-template-columns: 1fr; } }
+
+  .calc-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .calc-block-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .calc-block-icon {
+    font-size: 18px;
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 8px;
+  }
+  .calc-block-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    flex: 1;
+  }
+  .calc-block-total {
+    font-family: 'DM Mono', monospace;
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .calc-block-body { padding: 0; }
+
+  .calc-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+    gap: 16px;
+  }
+  .calc-row:last-child { border-bottom: none; }
+  .calc-row-label { color: var(--text2); flex: 1; min-width: 0; }
+  .calc-row-label small { display: block; color: var(--text3); font-size: 10px; margin-top: 1px; }
+  .calc-row-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    text-align: right;
+  }
+  .calc-row.subtotal {
+    background: rgba(255,255,255,0.02);
+    font-weight: 600;
+  }
+  .calc-row.subtotal .calc-row-label { color: var(--text); }
+  .calc-row.highlight {
+    background: rgba(0,212,170,0.05);
+    border-color: rgba(0,212,170,0.15);
+  }
+  .calc-row.highlight .calc-row-label { color: var(--accent); }
+
+  /* FIFO table inside calc block */
+  .fifo-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  .fifo-table th {
+    background: var(--surface2);
+    color: var(--text3);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 8px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .fifo-table td {
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--border);
+    font-family: 'DM Mono', monospace;
+    white-space: nowrap;
+  }
+  .fifo-table tr:last-child td { border-bottom: none; }
+  .fifo-table tr:hover td { background: var(--surface2); }
+
+  /* Základ dane full-width block */
+  .zaklad-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .zaklad-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(90deg, rgba(0,212,170,0.06) 0%, transparent 100%);
+  }
+  .zaklad-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 15px;
+  }
+  .zaklad-subtitle { font-size: 11px; color: var(--text2); margin-top: 2px; }
+  .zaklad-amount {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+  }
+  .zaklad-body { display: grid; grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 700px) { .zaklad-body { grid-template-columns: 1fr; } }
+  .zaklad-cell {
+    padding: 16px 20px;
+    border-right: 1px solid var(--border);
+  }
+  .zaklad-cell:last-child { border-right: none; }
+  .zaklad-cell-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; font-family: 'DM Mono', monospace; margin-bottom: 6px; }
+  .zaklad-cell-val { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; }
+  .zaklad-cell-note { font-size: 10px; color: var(--text2); margin-top: 3px; }
+
+  .legend-box {
+    background: rgba(0,153,255,0.06);
+    border: 1px solid rgba(0,153,255,0.18);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.7;
+    margin-bottom: 16px;
+  }
+  .legend-box b { color: var(--text); }
+
+  /* ── DAŇ & ODVODY SCREEN ── */
+  #danScreen { animation: fadeUp 0.3s ease; }
+
+  .dan-layout { display: flex; flex-direction: column; gap: 16px; }
+
+  .dan-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .dan-block-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 15px 20px; border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .dan-block-header-left { display: flex; align-items: center; gap: 12px; }
+  .dan-block-icon {
+    width: 34px; height: 34px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+  }
+  .dan-block-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; }
+  .dan-block-sub { font-size: 10px; color: var(--text2); margin-top: 1px; }
+  .dan-block-amount { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; }
+
+  .dan-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 20px; border-bottom: 1px solid var(--border);
+    font-size: 12px; gap: 12px;
+  }
+  .dan-row:last-child { border-bottom: none; }
+  .dan-row-label { color: var(--text2); flex: 1; }
+  .dan-row-label small { display: block; color: var(--text3); font-size: 10px; margin-top: 1px; }
+  .dan-row-val { font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 500; text-align: right; white-space: nowrap; }
+  .dan-row.dan-sub { background: rgba(255,255,255,0.02); }
+  .dan-row.dan-sub .dan-row-label { color: var(--text); font-weight: 600; }
+  .dan-row.dan-hl { background: rgba(0,212,170,0.05); border-color: rgba(0,212,170,0.15); }
+  .dan-row.dan-hl .dan-row-label { color: var(--accent); font-weight: 600; }
+  .dan-row.dan-warn { background: rgba(255,196,67,0.05); }
+  .dan-row.dan-warn .dan-row-label { color: var(--yellow); }
+
+  /* Final result big card */
+  .final-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .final-card-header {
+    padding: 20px 24px;
+    background: linear-gradient(135deg, rgba(0,212,170,0.08) 0%, rgba(0,153,255,0.05) 100%);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+  }
+  .final-card-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 16px; }
+  .final-card-sub { font-size: 11px; color: var(--text2); margin-top: 3px; }
+  .final-result-num {
+    font-family: 'Syne', sans-serif; font-size: 36px; font-weight: 800; line-height: 1;
+  }
+  .final-result-label { font-size: 11px; color: var(--text2); margin-top: 4px; font-family: 'DM Mono', monospace; }
+
+  .final-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    border-top: 1px solid var(--border);
+  }
+  @media (max-width: 700px) { .final-grid { grid-template-columns: 1fr 1fr; } }
+  .final-cell {
+    padding: 16px 20px; border-right: 1px solid var(--border);
+  }
+  .final-cell:last-child { border-right: none; }
+  .final-cell-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; font-family: 'DM Mono', monospace; margin-bottom: 6px; }
+  .final-cell-val { font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 700; }
+  .final-cell-note { font-size: 10px; color: var(--text2); margin-top: 3px; line-height: 1.4; }
+
+  /* odvody radenie */
+  .odvody-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 700px) { .odvody-grid { grid-template-columns: 1fr; } }
+
+  .warning-box {
+    background: rgba(255,196,67,0.07);
+    border: 1px solid rgba(255,196,67,0.22);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    font-size: 12px; color: var(--text2); line-height: 1.7;
+    display: flex; gap: 10px;
+  }
+  .warning-box-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+
+  .info-box {
+    background: rgba(0,153,255,0.06);
+    border: 1px solid rgba(0,153,255,0.18);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    font-size: 12px; color: var(--text2); line-height: 1.7;
+    display: flex; gap: 10px;
+  }
+  .info-box b { color: var(--text); }
+
+  /* ── VÝSTUP SCREEN ── */
+  #vystupScreen { animation: fadeUp 0.3s ease; }
+
+  .vystup-layout { display: flex; flex-direction: column; gap: 16px; }
+
+  /* Print button */
+  .btn-print {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--accent); color: #000;
+    border: none; padding: 11px 24px; border-radius: 8px;
+    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .btn-print:hover { background: #00efc0; transform: translateY(-1px); }
+  .btn-copy {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--surface2); color: var(--text);
+    border: 1px solid var(--border2); padding: 11px 20px; border-radius: 8px;
+    font-family: 'Syne', sans-serif; font-weight: 600; font-size: 13px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .btn-copy:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* DP form lookalike */
+  .dp-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .dp-card-header {
+    padding: 16px 22px; border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  }
+  .dp-card-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; }
+  .dp-card-sub { font-size: 11px; color: var(--text2); margin-top: 2px; }
+  .dp-card-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .dp-section-title {
+    padding: 10px 22px; background: rgba(0,0,0,0.2);
+    font-size: 10px; font-weight: 600; color: var(--text3);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    font-family: 'DM Mono', monospace; border-bottom: 1px solid var(--border);
+  }
+  .dp-row {
+    display: grid; grid-template-columns: 60px 1fr 180px;
+    align-items: center; gap: 0;
+    border-bottom: 1px solid var(--border);
+    min-height: 42px;
+  }
+  .dp-row:last-child { border-bottom: none; }
+  .dp-row-num {
+    padding: 10px 14px; font-family: 'DM Mono', monospace; font-size: 11px;
+    font-weight: 700; color: var(--accent); border-right: 1px solid var(--border);
+    text-align: center; align-self: stretch; display: flex; align-items: center; justify-content: center;
+    background: rgba(0,212,170,0.04);
+  }
+  .dp-row-label {
+    padding: 10px 16px; font-size: 12px; color: var(--text2); line-height: 1.4;
+    border-right: 1px solid var(--border);
+  }
+  .dp-row-label b { color: var(--text); display: block; margin-bottom: 2px; }
+  .dp-row-val {
+    padding: 10px 16px; font-family: 'DM Mono', monospace; font-size: 13px;
+    font-weight: 600; text-align: right;
+  }
+  .dp-row.dp-row-important { background: rgba(0,212,170,0.04); }
+  .dp-row.dp-row-important .dp-row-num { background: rgba(0,212,170,0.1); }
+  .dp-row.dp-row-important .dp-row-val { color: var(--accent); font-size: 15px; }
+
+  /* Checklist */
+  .checklist { display: flex; flex-direction: column; gap: 0; }
+  .check-item {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 14px 22px; border-bottom: 1px solid var(--border);
+    transition: background 0.15s; cursor: pointer;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-item:hover { background: var(--surface2); }
+  .check-box {
+    width: 20px; height: 20px; border-radius: 5px;
+    border: 2px solid var(--border2); flex-shrink: 0; margin-top: 1px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s; font-size: 12px;
+  }
+  .check-item.checked .check-box {
+    background: var(--green); border-color: var(--green); color: #000;
+  }
+  .check-title { font-size: 13px; font-weight: 500; margin-bottom: 3px; }
+  .check-desc { font-size: 11px; color: var(--text2); line-height: 1.5; }
+  .check-item.checked .check-title { color: var(--text2); text-decoration: line-through; }
+
+  /* Links section */
+  .links-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 20px 22px; }
+  @media (max-width: 640px) { .links-grid { grid-template-columns: 1fr; } }
+  .link-card {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: var(--radius); padding: 14px 16px;
+    text-decoration: none; color: var(--text);
+    transition: all 0.2s; cursor: pointer;
+  }
+  .link-card:hover { border-color: var(--accent); color: var(--accent); }
+  .link-icon { font-size: 20px; flex-shrink: 0; }
+  .link-title { font-size: 12px; font-weight: 600; font-family: 'Syne', sans-serif; }
+  .link-sub { font-size: 10px; color: var(--text2); margin-top: 2px; }
+
+  /* Summary top banner */
+  .vystup-banner {
+    background: linear-gradient(135deg, rgba(0,212,170,0.1) 0%, rgba(0,153,255,0.06) 100%);
+    border: 1px solid rgba(0,212,170,0.2);
+    border-radius: var(--radius-lg);
+    padding: 24px 28px;
+    display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;
+  }
+  .vystup-banner-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+  .vystup-banner-sub { font-size: 13px; color: var(--text2); }
+  .vystup-banner-nums { display: flex; gap: 28px; flex-wrap: wrap; }
+  .vystup-num { text-align: right; }
+  .vystup-num-val { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; line-height: 1; }
+  .vystup-num-label { font-size: 10px; color: var(--text2); margin-top: 4px; font-family: 'DM Mono', monospace; text-transform: uppercase; }
+
+  /* Print styles */
+  @media print {
+    .header, .steps-bar, .dash-tabs, .step-footer, .btn-print, .btn-copy,
+    .dp-card-actions, #btnNext, .btn-reset, .dash-header { display: none !important; }
+    body { background: white !important; color: black !important; }
+    .dp-card { border: 1px solid #ccc !important; break-inside: avoid; }
+    .dp-row-num { color: #007a5e !important; background: #f0faf7 !important; }
+    .vystup-banner { background: #f5f5f5 !important; border-color: #ccc !important; }
+    .checklist, .links-grid, .warning-box, .info-box { display: none !important; }
+    * { color: #000 !important; background: white !important; font-family: Arial, sans-serif !important; }
+    .dp-row-val { color: #000 !important; font-weight: bold !important; }
+  }
+
+  /* ── ZAMESTNANIE FORM ── */
+  #zamestnanieScreen { animation: fadeUp 0.3s ease; }
+
+  .zam-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+  @media (max-width: 860px) { .zam-layout { grid-template-columns: 1fr; } }
+
+  .zam-form-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .zam-form-header {
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .zam-form-header-icon {
+    width: 36px; height: 36px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px; flex-shrink: 0;
+  }
+  .zam-form-title {
+    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px;
+  }
+  .zam-form-subtitle { font-size: 11px; color: var(--text2); margin-top: 2px; }
+  .zam-form-body { padding: 20px 22px; display: flex; flex-direction: column; gap: 16px; }
+
+  .field-group { display: flex; flex-direction: column; gap: 6px; }
+  .field-label {
+    font-size: 11px; font-weight: 600; color: var(--text2);
+    text-transform: uppercase; letter-spacing: 0.05em;
+    font-family: 'DM Mono', monospace;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .field-hint {
+    font-size: 10px; color: var(--text3); font-weight: 400;
+    text-transform: none; letter-spacing: 0; margin-top: 1px;
+    display: block;
+  }
+  .field-input {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    font-weight: 500;
+    width: 100%;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+    -moz-appearance: textfield;
+  }
+  .field-input::-webkit-outer-spin-button,
+  .field-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+  .field-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,212,170,0.1);
+  }
+  .field-input.filled { border-color: rgba(0,212,170,0.35); }
+  .field-prefix-wrap { position: relative; }
+  .field-prefix {
+    position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+    font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text3);
+    pointer-events: none;
+  }
+  .field-prefix-wrap .field-input { padding-left: 42px; }
+
+  .field-divider {
+    height: 1px; background: var(--border); margin: 4px 0;
+  }
+
+  .zam-toggle-wrap {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 0; border-bottom: 1px solid var(--border);
+  }
+  .zam-toggle-label { font-size: 13px; color: var(--text); font-weight: 500; }
+  .zam-toggle-sub { font-size: 11px; color: var(--text2); margin-top: 2px; }
+  .toggle-switch {
+    position: relative; width: 42px; height: 24px; flex-shrink: 0;
+  }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider {
+    position: absolute; inset: 0; background: var(--border2);
+    border-radius: 24px; cursor: pointer; transition: 0.2s;
+  }
+  .toggle-slider::before {
+    content: ''; position: absolute;
+    width: 18px; height: 18px; left: 3px; bottom: 3px;
+    background: var(--text3); border-radius: 50%; transition: 0.2s;
+  }
+  .toggle-switch input:checked + .toggle-slider { background: var(--accent); }
+  .toggle-switch input:checked + .toggle-slider::before {
+    transform: translateX(18px); background: #000;
+  }
+
+  /* Live preview card */
+  .zam-preview-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    position: sticky; top: 100px;
+  }
+  .zam-preview-header {
+    padding: 16px 20px; border-bottom: 1px solid var(--border);
+    background: linear-gradient(90deg, rgba(0,212,170,0.07) 0%, transparent 100%);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .zam-preview-title {
+    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px;
+  }
+  .zam-preview-badge {
+    font-size: 10px; color: var(--accent); font-family: 'DM Mono', monospace;
+    background: rgba(0,212,170,0.1); border: 1px solid rgba(0,212,170,0.2);
+    padding: 2px 8px; border-radius: 10px;
+  }
+  .prev-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 20px; border-bottom: 1px solid var(--border);
+    font-size: 12px; gap: 12px;
+  }
+  .prev-row:last-child { border-bottom: none; }
+  .prev-row-label { color: var(--text2); font-size: 12px; }
+  .prev-row-label small { display: block; font-size: 10px; color: var(--text3); margin-top: 1px; }
+  .prev-row-val { font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 500; text-align: right; }
+  .prev-row.total-row {
+    background: rgba(0,212,170,0.05);
+    border-top: 1px solid rgba(0,212,170,0.15);
+  }
+  .prev-row.total-row .prev-row-label { color: var(--accent); font-weight: 600; }
+  .prev-row.total-row .prev-row-val { font-size: 15px; font-family: 'Syne', sans-serif; font-weight: 700; }
+  .prev-row.sep-row { background: var(--surface2); }
+  .prev-row.sep-row .prev-row-label { color: var(--text3); font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; font-family: 'DM Mono', monospace; }
+
+  .nezdanitelna-block {
+    background: rgba(0,153,255,0.05);
+    border: 1px solid rgba(0,153,255,0.15);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    font-size: 12px; color: var(--text2); line-height: 1.6;
+  }
+  .nezdanitelna-block b { color: var(--text); }
+  .nezdanitelna-row {
+    display: flex; justify-content: space-between;
+    margin-top: 6px; font-size: 11px;
+  }
+  .nezdanitelna-row span:first-child { color: var(--text2); }
+  .nezdanitelna-row span:last-child { font-family: 'DM Mono', monospace; color: var(--accent); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="logo">
+    <div class="logo-icon">N</div>
+    <div>
+      <div class="logo-text">Numo</div>
+      <div class="logo-sub">Tvoje financie, jasne</div>
+    </div>
+  </div>
+  <div class="header-badge" id="headerBadge">Krok 1 / 4 · Import</div>
+</header>
+
+<!-- STEPS BAR -->
+<nav class="steps-bar">
+  <div class="step-item active" id="step1-nav">
+    <div class="step-num">1</div>
+    <div class="step-label">Import dát</div>
+  </div>
+  <div class="step-sep"></div>
+  <div class="step-item" id="step2-nav">
+    <div class="step-num">2</div>
+    <div class="step-label">Kalkulácia</div>
+  </div>
+  <div class="step-sep"></div>
+  <div class="step-item" id="step3-nav">
+    <div class="step-num">3</div>
+    <div class="step-label">Zamestnanie</div>
+  </div>
+  <div class="step-sep"></div>
+  <div class="step-item" id="step4-nav">
+    <div class="step-num">4</div>
+    <div class="step-label">Daň &amp; odvody</div>
+  </div>
+  <div class="step-sep"></div>
+  <div class="step-item" id="step5-nav">
+    <div class="step-num">5</div>
+    <div class="step-label">Výstup</div>
+  </div>
+</nav>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text">Načítavam súbor...</div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span class="toast-icon" id="toastIcon">✓</span>
+  <span id="toastMsg"></span>
+</div>
+
+<!-- UPLOAD SCREEN -->
+<div class="main" id="uploadScreen">
+  <div class="upload-section">
+    <div class="upload-hero fade-up">
+      <h1>Dane a odvody<br><span>bez stresu</span></h1>
+      <p>Nahraj výpis z XTB, zadaj príjem zo zamestnania a Numo ti pripraví kompletné podklady pre daňové priznanie typ B.</p>
+    </div>
+
+    <div class="drop-zone fade-up fade-up-1" id="dropZone">
+      <div class="drop-icon">📊</div>
+      <div class="drop-title">Presuň súbor sem</div>
+      <div class="drop-sub">alebo klikni a vyber z počítača</div>
+      <button class="btn-upload" onclick="document.getElementById('fileInput').click()">
+        <span>📂</span> Vybrať súbor
+      </button>
+      <input type="file" id="fileInput" accept=".xlsx,.xls">
+      <div style="margin-top:16px; font-size:11px; color:var(--text3); font-family:'DM Mono',monospace;">
+        Podporovaný formát: .xlsx (XTB Fiscal Report)
+      </div>
+    </div>
+
+    <div class="upload-hints fade-up fade-up-2">
+      <div class="hint-chip"><div class="hint-chip-dot"></div>Akcie &amp; ETF (STC)</div>
+      <div class="hint-chip"><div class="hint-chip-dot"></div>CFD transakcie</div>
+      <div class="hint-chip"><div class="hint-chip-dot"></div>Dividendy</div>
+      <div class="hint-chip"><div class="hint-chip-dot"></div>Frakčné práva</div>
+      <div class="hint-chip"><div class="hint-chip-dot" style="background:var(--text3)"></div>Dáta zostávajú v prehliadači</div>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="main" id="dashboard">
+
+  <div class="dash-header fade-up">
+    <div>
+      <div class="dash-title" id="dashTitle">Fiscal Report 2025</div>
+      <div class="dash-meta">
+        <span>👤 <span id="dashName">—</span></span>
+        <span>📅 <span id="dashPeriod">—</span></span>
+        <span>📁 <span id="dashFile">—</span></span>
+      </div>
+    </div>
+    <button class="btn-reset" onclick="resetApp()">↩ Nahrať iný súbor</button>
+  </div>
+
+  <!-- TAB BAR -->
+  <div class="dash-tabs fade-up fade-up-1">
+    <button class="dash-tab active" onclick="switchTab('import', this)">📊 Import & Dáta</button>
+    <button class="dash-tab" onclick="switchTab('calc', this)">🧮 Kalkulácia</button>
+    <button class="dash-tab" onclick="switchTab('zam', this)">💼 Zamestnanie</button>
+    <button class="dash-tab" onclick="switchTab('dan', this)">🧾 Daň & Odvody</button>
+    <button class="dash-tab" onclick="switchTab('vystup', this)">📤 Výstup</button>
+  </div>
+
+  <!-- IMPORT SCREEN (tab 1) -->
+  <div id="importScreen">
+
+  <div class="notice fade-up fade-up-1">
+    <span class="notice-icon">ℹ️</span>
+    <span>Nižšie sú zobrazené všetky transakcie z tvojho XTB Fiscal Reportu roztriedené podľa typu. V ďalšom kroku prebehne daňová kalkulácia (FIFO, § 7, § 8 ZDP). Skontroluj, či vidíš všetky záznamy správne.</span>
+  </div>
+
+  <!-- SUMMARY CARDS -->
+  <div class="summary-grid fade-up fade-up-2" id="summaryGrid">
+    <!-- filled by JS -->
+  </div>
+
+  <!-- SECTIONS -->
+  <div id="sectionsContainer" class="fade-up fade-up-3">
+    <!-- filled by JS -->
+  </div>
+
+  </div><!-- /importScreen -->
+
+  <!-- CALC SCREEN (tab 2) -->
+  <div id="calcScreen">
+    <!-- filled by JS after calculation -->
+  </div>
+
+  <!-- ZAMESTNANIE SCREEN (tab 3) -->
+  <div id="zamestnanieScreen" style="display:none">
+    <!-- filled by JS -->
+  </div>
+
+  <!-- DAŇ & ODVODY SCREEN (tab 4) -->
+  <div id="danScreen" style="display:none">
+    <!-- filled by JS -->
+  </div>
+
+  <!-- VÝSTUP SCREEN (tab 5) -->
+  <div id="vystupScreen" style="display:none">
+    <!-- filled by JS -->
+  </div>
+
+  <div class="step-footer fade-up fade-up-4">
+    <button class="btn-next" id="btnNext" disabled>
+      Pokračovať: Kalkulácia →
+    </button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════
+let parsedData = null;
+
+// ═══════════════════════════════════════════════
+//  DRAG & DROP
+// ═══════════════════════════════════════════════
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+
+dropZone.addEventListener('dragover', e => {
+  e.preventDefault();
+  dropZone.classList.add('dragover');
+});
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) handleFile(file);
+});
+fileInput.addEventListener('change', e => {
+  if (e.target.files[0]) handleFile(e.target.files[0]);
+});
+dropZone.addEventListener('click', e => {
+  if (e.target.tagName !== 'BUTTON') fileInput.click();
+});
+
+// ═══════════════════════════════════════════════
+//  FILE HANDLER
+// ═══════════════════════════════════════════════
+function handleFile(file) {
+  if (!file.name.match(/\.xlsx?$/i)) {
+    showToast('Nesprávny formát. Nahraj .xlsx súbor z XTB.', 'error');
+    return;
+  }
+  showLoading(true);
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const wb = XLSX.read(data, { type: 'array', cellDates: true });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, raw: false });
+      parsedData = parseXTBReport(rows, file.name);
+      showLoading(false);
+      renderDashboard(parsedData);
+      showToast('Súbor úspešne načítaný ✓', 'success');
+    } catch (err) {
+      showLoading(false);
+      showToast('Chyba pri čítaní súboru. Skús znovu.', 'error');
+      console.error(err);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// ═══════════════════════════════════════════════
+//  XTB PARSER
+// ═══════════════════════════════════════════════
+function parseXTBReport(rows, filename) {
+  const result = {
+    filename,
+    name: '',
+    period: '',
+    summary: [],
+    dividendSummary: [],
+    cfdSummary: [],
+    stcSummary: [],
+    adjustmentsSummary: [],
+    cfdTransactions: [],
+    stcTransactions: [],
+    fractionalTransactions: [],
+    dividendTransactions: [],
+    fees: [],
+    adjustments: [],
+    openTrades: [],
+    feesSummary: []
+  };
+
+  // Helper: find section start row by keyword
+  function findSection(keyword) {
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      if (row && row.some(c => c && String(c).includes(keyword))) return i;
+    }
+    return -1;
+  }
+
+  // Helper: extract data rows after a header row until next section/empty block
+  function extractRows(startRow, colCount) {
+    const data = [];
+    for (let i = startRow; i < rows.length; i++) {
+      const row = rows[i];
+      if (!row || row.every(c => c === null || c === '')) break;
+      // Skip section-title rows (only col[1] filled, rest null)
+      const nonNull = row.filter(c => c !== null && c !== '').length;
+      if (nonNull <= 1 && i > startRow) break;
+      data.push(row);
+    }
+    return data;
+  }
+
+  // ── Meta ──
+  if (rows[0]) {
+    const cell = rows[0].find(c => c && String(c).includes('Fiscal report'));
+    if (cell) {
+      const m = String(cell).match(/(\d{4}\/\d{2}\/\d{2})\s*-\s*(\d{4}\/\d{2}\/\d{2})/);
+      if (m) result.period = m[1] + ' – ' + m[2];
+    }
+  }
+  if (rows[1]) {
+    const cell = rows[1].find(c => c && String(c).trim().length > 0 && !String(c).includes('Fiscal'));
+    if (cell) result.name = String(cell).trim();
+  }
+
+  // ── P/L Summary ──
+  const plIdx = findSection('Typ (Type)');
+  if (plIdx >= 0) {
+    for (let i = plIdx + 1; i < Math.min(plIdx + 10, rows.length); i++) {
+      const r = rows[i];
+      if (!r || !r[1] || String(r[1]).includes('Obdržané') || String(r[1]).includes('Prehľad')) break;
+      if (r[1] && r[2] !== undefined) {
+        result.summary.push({ type: String(r[1]).trim(), pl: parseNum(r[2]) });
+      }
+    }
+  }
+
+  // ── Dividend Summary (by country) ──
+  const divSumIdx = findSection('Štát (Country)');
+  if (divSumIdx >= 0) {
+    for (let i = divSumIdx + 2; i < Math.min(divSumIdx + 20, rows.length); i++) {
+      const r = rows[i];
+      if (!r || !r[1] || String(r[1]).startsWith('*')) break;
+      if (r[1] && r[2]) {
+        result.dividendSummary.push({
+          country: String(r[1]).trim(),
+          currency: String(r[2]).trim(),
+          gross: parseNum(r[3]),
+          withholding: parseNum(r[4]),
+          net: parseNum(r[5])
+        });
+      }
+    }
+  }
+
+  // ── CFD Summary ──
+  const cfdSumIdx = findSection('Prehľad ziskov a strát z CFD');
+  if (cfdSumIdx >= 0) {
+    for (let i = cfdSumIdx + 2; i < Math.min(cfdSumIdx + 20, rows.length); i++) {
+      const r = rows[i];
+      if (!r || !r[1] || String(r[1]).includes('Prehľad')) break;
+      if (r[1] && !String(r[1]).startsWith('Účet') && r[3]) {
+        result.cfdSummary.push({
+          account: String(r[1]).trim(),
+          currency: String(r[2] || '').trim(),
+          productType: String(r[3]).trim(),
+          netPL: parseNum(r[4]),
+          totalProfit: parseNum(r[5]),
+          totalLoss: parseNum(r[6])
+        });
+      }
+    }
+  }
+
+  // ── STC Summary ──
+  const stcSumIdx = findSection('Prehľad ziskov a strát na STC');
+  if (stcSumIdx >= 0) {
+    for (let i = stcSumIdx + 3; i < Math.min(stcSumIdx + 20, rows.length); i++) {
+      const r = rows[i];
+      if (!r || !r[1] || String(r[1]).includes('Prehľad') || String(r[1]).includes('Súhrn')) break;
+      if (r[1] && !String(r[1]).startsWith('Účet') && r[3]) {
+        result.stcSummary.push({
+          account: String(r[1]).trim(),
+          currency: String(r[2] || '').trim(),
+          productType: String(r[3]).trim(),
+          pl: parseNum(r[4])
+        });
+      }
+    }
+  }
+
+  // ── Adjustments Summary ──
+  const adjSumIdx = findSection('Súhrn zisku a straty s úpravami');
+  if (adjSumIdx >= 0) {
+    for (let i = adjSumIdx + 2; i < Math.min(adjSumIdx + 20, rows.length); i++) {
+      const r = rows[i];
+      if (!r || !r[1] || String(r[1]).includes('Zoznam')) break;
+      if (r[1] && !String(r[1]).startsWith('Hlavný') && r[3]) {
+        result.adjustmentsSummary.push({
+          account: String(r[1]).trim(),
+          currency: String(r[2] || '').trim(),
+          productType: String(r[3]).trim(),
+          pl: parseNum(r[4])
+        });
+      }
+    }
+  }
+
+  // ── CFD Transactions ──
+  const cfdTxIdx = findSection('Zoznam CFD transakcií');
+  if (cfdTxIdx >= 0) {
+    for (let i = cfdTxIdx + 2; i < rows.length; i++) {
+      const r = rows[i];
+      if (!r || !r[1] || String(r[1]).includes('Zoznam STC')) break;
+      if (r[1] && !String(r[1]).startsWith('Účet') && r[3]) {
+        result.cfdTransactions.push({
+          account: String(r[1]).trim(),
+          currency: String(r[2] || '').trim(),
+          dealId: String(r[3] || '').trim(),
+          system: String(r[4] || '').trim(),
+          openTime: String(r[5] || '').trim(),
+          type: String(r[6] || '').trim(),
+          lots: parseNum(r[7]),
+          symbol: String(r[8] || '').trim(),
+          closeTime: String(r[9] || '').trim(),
+          commission: parseNum(r[10]),
+          swap: parseNum(r[11]),
+          profit: parseNum(r[12])
+        });
+      }
+    }
+  }
+
+  // ── STC Transactions ──
+  const stcTxIdx = findSection('Zoznam STC transakcií');
+  if (stcTxIdx >= 0) {
+    for (let i = stcTxIdx + 2; i < rows.length; i++) {
+      const r = rows[i];
+      if (!r || !r[1] || String(r[1]).includes('Zoznam transakcií s Frakčnými')) break;
+      if (r[1] && !String(r[1]).startsWith('Účet') && r[3]) {
+        result.stcTransactions.push({
+          account: String(r[1]).trim(),
+          currency: String(r[2] || '').trim(),
+          dealId: String(r[3] || '').trim(),
+          system: String(r[4] || '').trim(),
+          openTime: String(r[5] || '').trim(),
+          type: String(r[6] || '').trim(),
+          lots: parseNum(r[7]),
+          symbol: String(r[8] || '').trim(),
+          instrCurrency: String(r[9] || '').trim(),
+          purchaseVal: parseNum(r[10]),
+          saleVal: parseNum(r[11]),
+          closeTime: String(r[12] || '').trim(),
+          holdingDays: parseNum(r[13]),
+          commission: parseNum(r[14]),
+          grossProfit: parseNum(r[15]),
+          netProfit: parseNum(r[16]),
+          saleRate: parseNum(r[17]),
+          purchaseRate: parseNum(r[18])
+        });
+      }
+    }
+  }
+
+  // ── Fractional Transactions ──
+  const fracTxIdx = findSection('Zoznam transakcií s Frakčnými právami');
+  if (fracTxIdx >= 0) {
+    for (let i = fracTxIdx + 2; i < rows.length; i++) {
+      const r = rows[i];
+      if (!r || !r[1] || String(r[1]).includes('Zoznam prijatých dividend')) break;
+      if (r[1] && !String(r[1]).startsWith('Účet') && r[3]) {
+        result.fractionalTransactions.push({
+          account: String(r[1]).trim(),
+          currency: String(r[2] || '').trim(),
+          dealId: String(r[3] || '').trim(),
+          system: String(r[4] || '').trim(),
+          openTime: String(r[5] || '').trim(),
+          type: String(r[6] || '').trim(),
+          lots: parseNum(r[7]),
+          symbol: String(r[8] || '').trim(),
+          instrCurrency: String(r[9] || '').trim(),
+          purchaseVal: parseNum(r[10]),
+          saleVal: parseNum(r[11]),
+          closeTime: String(r[12] || '').trim(),
+          holdingDays: parseNum(r[13]),
+          commission: parseNum(r[14]),
+          grossProfit: parseNum(r[15]),
+          netProfit: parseNum(r[16]),
+          saleRate: parseNum(r[17]),
+          purchaseRate: parseNum(r[18])
+        });
+      }
+    }
+  }
+
+  // ── Dividend Transactions ──
+  const divTxIdx = findSection('Zoznam prijatých dividend a ostatných peňažných');
+  if (divTxIdx >= 0) {
+    for (let i = divTxIdx + 2; i < rows.length; i++) {
+      const r = rows[i];
+      if (!r || !r[1] || String(r[1]).startsWith('*') || String(r[1]).includes('Zoznam Poplatkov')) break;
+      if (r[1] && !String(r[1]).startsWith('Účet') && r[4]) {
+        result.dividendTransactions.push({
+          account: String(r[1]).trim(),
+          currency: String(r[2] || '').trim(),
+          comment: String(r[3] || '').trim(),
+          date: String(r[4] || '').trim(),
+          amountEur: parseNum(r[5]),
+          amountOrig: parseNum(r[6]),
+          isin: String(r[7] || '').trim(),
+          rate: parseNum(r[8])
+        });
+      }
+    }
+  }
+
+  // ── Fees ──
+  const feesIdx = findSection('Zoznam Poplatkov, Bonusov a Úrokov');
+  if (feesIdx >= 0) {
+    for (let i = feesIdx + 2; i < rows.length; i++) {
+      const r = rows[i];
+      if (!r || !r[1] || String(r[1]).includes('Korekcie') || String(r[1]).includes('Súhrn Poplatkov')) break;
+      if (r[1] && !String(r[1]).startsWith('Účet') && r[4]) {
+        result.fees.push({
+          account: String(r[1]).trim(),
+          currency: String(r[2] || '').trim(),
+          comment: String(r[3] || '').trim(),
+          date: String(r[4] || '').trim(),
+          amount: parseNum(r[5]),
+          operationName: String(r[6] || '').trim()
+        });
+      }
+    }
+  }
+
+  // ── Adjustments ──
+  const adjIdx = findSection('Korekcie transakcií');
+  if (adjIdx >= 0) {
+    for (let i = adjIdx + 2; i < rows.length; i++) {
+      const r = rows[i];
+      if (!r || !r[1] || String(r[1]).includes('Súhrn Poplatkov')) break;
+      if (r[1] && !String(r[1]).startsWith('Účet') && r[5]) {
+        result.adjustments.push({
+          account: String(r[1]).trim(),
+          currency: String(r[2] || '').trim(),
+          comment: String(r[3] || '').trim(),
+          type: String(r[4] || '').trim(),
+          symbol: String(r[5] || '').trim(),
+          date: String(r[6] || '').trim(),
+          amount: parseNum(r[7])
+        });
+      }
+    }
+  }
+
+  // ── Fees Summary ──
+  const feesSumIdx = findSection('Súhrn Poplatkov, Bonusov, Úrokov');
+  if (feesSumIdx >= 0) {
+    for (let i = feesSumIdx + 2; i < rows.length; i++) {
+      const r = rows[i];
+      if (!r || !r[1] || String(r[1]).includes('Zoznam otvorených')) break;
+      if (r[1] && !String(r[1]).startsWith('Účet') && r[2]) {
+        result.feesSummary.push({
+          account: String(r[1]).trim(),
+          currency: String(r[2] || '').trim(),
+          amount: parseNum(r[3])
+        });
+      }
+    }
+  }
+
+  // ── Open Trades ──
+  const openIdx = findSection('Zoznam otvorených transakcií');
+  if (openIdx >= 0) {
+    for (let i = openIdx + 2; i < rows.length; i++) {
+      const r = rows[i];
+      if (!r || r.every(c => c === null || c === '')) break;
+      if (r[1] && !String(r[1]).startsWith('Účet') && r[3]) {
+        result.openTrades.push({
+          account: String(r[1]).trim(),
+          currency: String(r[2] || '').trim(),
+          dealId: String(r[3] || '').trim(),
+          system: String(r[4] || '').trim(),
+          openTime: String(r[5] || '').trim(),
+          type: String(r[6] || '').trim(),
+          lots: parseNum(r[7]),
+          symbol: String(r[8] || '').trim(),
+          commission: parseNum(r[9]),
+          swap: parseNum(r[10]),
+          grossProfit: parseNum(r[11]),
+          netProfit: parseNum(r[12])
+        });
+      }
+    }
+  }
+
+  return result;
+}
+
+function parseNum(val) {
+  if (val === null || val === undefined || val === '') return null;
+  const n = parseFloat(String(val).replace(',', '.').replace(/\s/g, ''));
+  return isNaN(n) ? null : n;
+}
+
+// ═══════════════════════════════════════════════
+//  RENDER DASHBOARD
+// ═══════════════════════════════════════════════
+function renderDashboard(data) {
+  document.getElementById('uploadScreen').style.display = 'none';
+  const dash = document.getElementById('dashboard');
+  dash.style.display = 'block';
+  setTimeout(() => dash.classList.add('show'), 10);
+
+  // Meta
+  document.getElementById('dashTitle').textContent =
+    'Fiscal Report · ' + (data.period ? data.period.split(' ')[0].split('/')[0] : '—');
+  document.getElementById('dashName').textContent = data.name || '—';
+  document.getElementById('dashPeriod').textContent = data.period || '—';
+  document.getElementById('dashFile').textContent = data.filename;
+
+  // Step nav: mark step 1 done, step 2 active
+  document.getElementById('step1-nav').classList.remove('active');
+  document.getElementById('step1-nav').classList.add('done');
+  document.getElementById('step2-nav').classList.add('active');
+  document.getElementById('headerBadge').textContent = 'Krok 2 / 5 · Kalkulácia';
+
+  // Summary cards
+  renderSummaryCards(data);
+
+  // Sections
+  renderSections(data);
+
+  // Enable next button
+  const btn = document.getElementById('btnNext');
+  btn.classList.add('ready');
+  btn.removeAttribute('disabled');
+}
+
+function renderSummaryCards(data) {
+  const grid = document.getElementById('summaryGrid');
+
+  const stcCount = data.stcTransactions.length + data.fractionalTransactions.length;
+  const cfdCount = data.cfdTransactions.length;
+  const divCount = data.dividendTransactions.length;
+  const openCount = data.openTrades.length;
+  const feesCount = data.fees.length;
+
+  // Calc totals from summary arrays
+  let totalPL = null;
+  data.summary.forEach(s => { if (s.pl !== null) totalPL = (totalPL || 0) + s.pl; });
+
+  let totalDiv = null;
+  data.dividendTransactions.forEach(d => { if (d.amountEur !== null) totalDiv = (totalDiv || 0) + d.amountEur; });
+
+  let totalFees = null;
+  data.feesSummary.forEach(f => { if (f.amount !== null) totalFees = (totalFees || 0) + f.amount; });
+
+  const cards = [
+    { label: 'Celkový P/L', value: totalPL, suffix: 'EUR', color: totalPL >= 0 ? 'green' : 'red', fmt: true },
+    { label: 'Akcie & ETF (STC)', value: stcCount, suffix: 'transakcií', color: 'blue', fmt: false },
+    { label: 'CFD transakcie', value: cfdCount, suffix: 'transakcií', color: 'yellow', fmt: false },
+    { label: 'Dividendy', value: divCount > 0 ? totalDiv : 0, suffix: divCount > 0 ? 'EUR hrubé' : 'žiadne', color: 'cyan', fmt: divCount > 0 },
+    { label: 'Otvorené pozície', value: openCount, suffix: 'pozícií', color: 'yellow', fmt: false },
+  ];
+
+  grid.innerHTML = cards.map(c => `
+    <div class="summary-card ${c.color}">
+      <div class="card-label">${c.label}</div>
+      <div class="card-value ${c.fmt && c.value !== null ? (c.value >= 0 ? 'pos' : 'neg') : ''}">
+        ${c.value === null ? '—' : c.fmt ? fmtNum(c.value) : c.value}
+      </div>
+      <div class="card-sub">${c.suffix}</div>
+    </div>
+  `).join('');
+}
+
+function renderSections(data) {
+  const container = document.getElementById('sectionsContainer');
+  container.innerHTML = '';
+
+  const sections = [
+    {
+      id: 'stc',
+      icon: '📈',
+      iconBg: 'rgba(0,153,255,0.12)',
+      title: 'Akcie & ETF (STC transakcie)',
+      count: data.stcTransactions.length,
+      renderFn: () => renderStcTable(data.stcTransactions)
+    },
+    {
+      id: 'frac',
+      icon: '🔹',
+      iconBg: 'rgba(0,153,255,0.08)',
+      title: 'Frakčné práva',
+      count: data.fractionalTransactions.length,
+      renderFn: () => renderStcTable(data.fractionalTransactions)
+    },
+    {
+      id: 'cfd',
+      icon: '⚡',
+      iconBg: 'rgba(255,196,67,0.1)',
+      title: 'CFD transakcie',
+      count: data.cfdTransactions.length,
+      renderFn: () => renderCfdTable(data.cfdTransactions)
+    },
+    {
+      id: 'div',
+      icon: '💰',
+      iconBg: 'rgba(0,212,170,0.1)',
+      title: 'Dividendy',
+      count: data.dividendTransactions.length,
+      renderFn: () => renderDivTable(data.dividendTransactions)
+    },
+    {
+      id: 'open',
+      icon: '🔓',
+      iconBg: 'rgba(255,196,67,0.08)',
+      title: 'Otvorené pozície (nedaňové)',
+      count: data.openTrades.length,
+      renderFn: () => renderOpenTable(data.openTrades)
+    },
+    {
+      id: 'fees',
+      icon: '🏦',
+      iconBg: 'rgba(138,151,168,0.1)',
+      title: 'Poplatky, bonusy, úroky',
+      count: data.fees.length,
+      renderFn: () => renderFeesTable(data.fees)
+    },
+    {
+      id: 'adj',
+      icon: '🔧',
+      iconBg: 'rgba(138,151,168,0.08)',
+      title: 'Korekcie transakcií',
+      count: data.adjustments.length,
+      renderFn: () => renderAdjTable(data.adjustments)
+    }
+  ];
+
+  sections.forEach(sec => {
+    const panel = document.createElement('div');
+    panel.className = 'section-panel';
+    panel.innerHTML = `
+      <div class="section-header" onclick="toggleSection('${sec.id}', this)">
+        <div class="section-title-wrap">
+          <div class="section-icon" style="background:${sec.iconBg}">${sec.icon}</div>
+          <div class="section-title">${sec.title}</div>
+          <div class="section-count">${sec.count} záznamov</div>
+        </div>
+        <div class="section-arrow">▼</div>
+      </div>
+      <div class="section-body" id="body-${sec.id}">
+        ${sec.count > 0 ? sec.renderFn() : `<div class="empty-state"><div class="empty-state-icon">📭</div>Žiadne záznamy v tomto roku</div>`}
+      </div>
+    `;
+    container.appendChild(panel);
+  });
+}
+
+function toggleSection(id, header) {
+  const body = document.getElementById('body-' + id);
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  header.classList.toggle('open', !isOpen);
+}
+
+// ═══════════════════════════════════════════════
+//  TABLE RENDERERS
+// ═══════════════════════════════════════════════
+function renderStcTable(txs) {
+  if (!txs.length) return emptyState();
+  return `<table>
+    <thead><tr>
+      <th>Symbol</th><th>Typ</th><th>Dátum nákupu</th><th>Dátum predaja</th>
+      <th>Objem</th><th>Nákup (EUR)</th><th>Predaj (EUR)</th>
+      <th>Komisia</th><th>Hrubý zisk</th><th>Čistý zisk</th>
+      <th>Drž. dni</th><th>Mena inštr.</th>
+    </tr></thead>
+    <tbody>
+      ${txs.map(t => `<tr>
+        <td class="symbol">${t.symbol}</td>
+        <td class="${t.type === 'BUY' ? 'type-buy' : 'type-sell'}">${t.type}</td>
+        <td class="neutral">${t.openTime}</td>
+        <td class="neutral">${t.closeTime || '—'}</td>
+        <td>${t.lots !== null ? t.lots : '—'}</td>
+        <td>${t.purchaseVal !== null ? fmtNum(t.purchaseVal) : '—'}</td>
+        <td>${t.saleVal !== null ? fmtNum(t.saleVal) : '—'}</td>
+        <td class="neg">${t.commission !== null ? fmtNum(t.commission) : '—'}</td>
+        <td class="${colorClass(t.grossProfit)}">${t.grossProfit !== null ? fmtNum(t.grossProfit) : '—'}</td>
+        <td class="${colorClass(t.netProfit)}">${t.netProfit !== null ? fmtNum(t.netProfit) : '—'}</td>
+        <td class="neutral">${t.holdingDays !== null ? t.holdingDays : '—'}</td>
+        <td class="neutral">${t.instrCurrency || '—'}</td>
+      </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+function renderCfdTable(txs) {
+  if (!txs.length) return emptyState();
+  return `<table>
+    <thead><tr>
+      <th>Symbol</th><th>Typ</th><th>Čas otvorenia</th><th>Čas uzatvorenia</th>
+      <th>Objem (loty)</th><th>Komisia</th><th>Swap</th><th>Zisk/Strata</th>
+    </tr></thead>
+    <tbody>
+      ${txs.map(t => `<tr>
+        <td class="symbol">${t.symbol}</td>
+        <td class="${t.type === 'BUY' ? 'type-buy' : 'type-sell'}">${t.type}</td>
+        <td class="neutral">${t.openTime}</td>
+        <td class="neutral">${t.closeTime || '—'}</td>
+        <td>${t.lots !== null ? t.lots : '—'}</td>
+        <td class="neg">${t.commission !== null ? fmtNum(t.commission) : '—'}</td>
+        <td class="${colorClass(t.swap)}">${t.swap !== null ? fmtNum(t.swap) : '—'}</td>
+        <td class="${colorClass(t.profit)}">${t.profit !== null ? fmtNum(t.profit) : '—'}</td>
+      </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+function renderDivTable(txs) {
+  if (!txs.length) return emptyState();
+  return `<table>
+    <thead><tr>
+      <th>Dátum</th><th>Komentár</th><th>ISIN</th>
+      <th>Dividenda (EUR)</th><th>Dividenda (orig.)</th><th>Kurz</th><th>Mena</th>
+    </tr></thead>
+    <tbody>
+      ${txs.map(t => `<tr>
+        <td class="neutral">${t.date}</td>
+        <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis">${t.comment}</td>
+        <td class="neutral">${t.isin || '—'}</td>
+        <td class="pos">${t.amountEur !== null ? fmtNum(t.amountEur) : '—'}</td>
+        <td class="pos">${t.amountOrig !== null ? fmtNum(t.amountOrig) : '—'}</td>
+        <td class="neutral">${t.rate !== null ? t.rate : '—'}</td>
+        <td class="neutral">${t.currency}</td>
+      </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+function renderOpenTable(txs) {
+  if (!txs.length) return emptyState();
+  return `<table>
+    <thead><tr>
+      <th>Symbol</th><th>Typ</th><th>Čas otvorenia</th><th>Objem</th>
+      <th>Komisia</th><th>Hrubý zisk</th><th>Čistý zisk</th><th>Stav</th>
+    </tr></thead>
+    <tbody>
+      ${txs.map(t => `<tr>
+        <td class="symbol">${t.symbol}</td>
+        <td class="${t.type === 'BUY' ? 'type-buy' : 'type-sell'}">${t.type}</td>
+        <td class="neutral">${t.openTime}</td>
+        <td>${t.lots !== null ? t.lots : '—'}</td>
+        <td class="neg">${t.commission !== null ? fmtNum(t.commission) : '—'}</td>
+        <td class="${colorClass(t.grossProfit)}">${t.grossProfit !== null ? fmtNum(t.grossProfit) : '—'}</td>
+        <td class="${colorClass(t.netProfit)}">${t.netProfit !== null ? fmtNum(t.netProfit) : '—'}</td>
+        <td><span class="chip open">Otvorené</span></td>
+      </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+function renderFeesTable(txs) {
+  if (!txs.length) return emptyState();
+  return `<table>
+    <thead><tr>
+      <th>Dátum</th><th>Operácia</th><th>Komentár</th><th>Suma (EUR)</th>
+    </tr></thead>
+    <tbody>
+      ${txs.map(t => `<tr>
+        <td class="neutral">${t.date}</td>
+        <td>${t.operationName || '—'}</td>
+        <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;color:var(--text2)">${t.comment}</td>
+        <td class="${colorClass(t.amount)}">${t.amount !== null ? fmtNum(t.amount) : '—'}</td>
+      </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+function renderAdjTable(txs) {
+  if (!txs.length) return emptyState();
+  return `<table>
+    <thead><tr>
+      <th>Dátum</th><th>Symbol</th><th>Typ korekcie</th><th>Komentár</th><th>Suma</th>
+    </tr></thead>
+    <tbody>
+      ${txs.map(t => `<tr>
+        <td class="neutral">${t.date}</td>
+        <td class="symbol">${t.symbol || '—'}</td>
+        <td>${t.type || '—'}</td>
+        <td style="color:var(--text2)">${t.comment}</td>
+        <td class="${colorClass(t.amount)}">${t.amount !== null ? fmtNum(t.amount) : '—'}</td>
+      </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+function emptyState() {
+  return `<div class="empty-state"><div class="empty-state-icon">📭</div>Žiadne záznamy v tomto roku</div>`;
+}
+
+// ═══════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════
+function fmtNum(n) {
+  if (n === null || n === undefined) return '—';
+  const abs = Math.abs(n);
+  const sign = n < 0 ? '−' : (n > 0 ? '+' : '');
+  return sign + abs.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+}
+
+function colorClass(n) {
+  if (n === null || n === undefined) return 'neutral';
+  if (n > 0) return 'pos';
+  if (n < 0) return 'neg';
+  return 'neutral';
+}
+
+function showLoading(show) {
+  document.getElementById('loadingOverlay').classList.toggle('show', show);
+}
+
+function showToast(msg, type = 'success') {
+  const toast = document.getElementById('toast');
+  const icon = document.getElementById('toastIcon');
+  document.getElementById('toastMsg').textContent = msg;
+  icon.textContent = type === 'error' ? '⚠️' : '✓';
+  toast.className = 'toast ' + type;
+  void toast.offsetWidth;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3500);
+}
+
+function resetApp() {
+  parsedData = null;
+  calcCache = null;
+  danCache = null;
+  zamData = { maZamestnanie: true, hrubyPrijem: '', danPreddavky: '', odvodyZamestnanca: '', uplatnitNezdanitelnu: true, uplatnitBonus: false, pocetDeti: 0 };
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('dashboard').classList.remove('show');
+  document.getElementById('uploadScreen').style.display = '';
+  document.getElementById('fileInput').value = '';
+  ['step1-nav','step2-nav','step3-nav','step4-nav'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('active','done');
+  });
+  document.getElementById('step1-nav').classList.add('active');
+  document.getElementById('headerBadge').textContent = 'Krok 1 / 5 · Import';
+}
+
+// Tab switching
+function switchTab(tab, btn) {
+  document.querySelectorAll('.dash-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('importScreen').style.display = 'none';
+  document.getElementById('calcScreen').classList.remove('show');
+  document.getElementById('zamestnanieScreen').style.display = 'none';
+  document.getElementById('danScreen').style.display = 'none';
+  document.getElementById('vystupScreen').style.display = 'none';
+
+  if (tab === 'import') {
+    document.getElementById('importScreen').style.display = '';
+  } else if (tab === 'calc') {
+    document.getElementById('calcScreen').classList.add('show');
+    renderCalcScreen(parsedData);
+  } else if (tab === 'zam') {
+    document.getElementById('zamestnanieScreen').style.display = '';
+    renderZamScreen();
+  } else if (tab === 'dan') {
+    document.getElementById('danScreen').style.display = '';
+    renderDanScreen();
+  } else if (tab === 'vystup') {
+    document.getElementById('vystupScreen').style.display = '';
+    renderVystupScreen();
+  }
+}
+
+// Next step button — cycles through tabs
+document.getElementById('btnNext').addEventListener('click', () => {
+  const active = document.querySelector('.dash-tab.active');
+  const tabs = [...document.querySelectorAll('.dash-tab')];
+  const idx = tabs.indexOf(active);
+  const tabNames = ['import','calc','zam','dan','vystup'];
+  const next = tabs[idx + 1];
+  if (next) {
+    switchTab(tabNames[idx + 1], next);
+  }
+});
+
+// ═══════════════════════════════════════════════
+//  ZAMESTNANIE STATE
+// ═══════════════════════════════════════════════
+let zamData = {
+  maZamestnanie: true,
+  hrubyPrijem: '',       // § 5 hrubý príjem
+  danPreddavky: '',      // zaplatené preddavky dane zamestnávateľom
+  odvodyZamestnanca: '', // zdravotné + sociálne od zamestnanca
+  uplatnitNezdanitelnu: true,
+  uplatnitBonus: false,
+  pocetDeti: 0,
+};
+
+const NEZDANITELNA_2025 = 4961.40;  // ročná nezdaniteľná časť ZD na daňovníka 2025
+const DANOVY_BONUS_DIETA_2025 = 100.00; // mesačne na 1 dieťa do 15 rokov (zjednodušené)
+
+// ═══════════════════════════════════════════════
+//  RENDER ZAMESTNANIE SCREEN
+// ═══════════════════════════════════════════════
+function renderZamScreen() {
+  const screen = document.getElementById('zamestnanieScreen');
+
+  // Activate step 3 in nav
+  document.getElementById('step2-nav').classList.remove('active');
+  document.getElementById('step2-nav').classList.add('done');
+  document.getElementById('step3-nav').classList.add('active');
+  document.getElementById('headerBadge').textContent = 'Krok 3 / 5 · Zamestnanie';
+
+  screen.innerHTML = `
+  <div style="margin-bottom:20px">
+    <div class="notice" style="margin-bottom:0">
+      <span class="notice-icon">📄</span>
+      <span>Zadaj údaje z <b>Potvrdenia o zdaniteľných príjmoch</b> — dostaneš ho od zamestnávateľa (zvyčajne do februára nasledujúceho roka). Ak nemáš zamestnanie, vypni prepínač.</span>
+    </div>
+  </div>
+
+  <div class="zam-layout">
+    <!-- LEFT: FORM -->
+    <div style="display:flex;flex-direction:column;gap:16px">
+
+      <!-- Toggle: má zamestnanie -->
+      <div class="zam-form-card">
+        <div class="zam-form-body" style="padding:16px 22px">
+          <div class="zam-toggle-wrap" style="border-bottom:none;padding:0">
+            <div>
+              <div class="zam-toggle-label">Príjem zo zamestnania (§ 5)</div>
+              <div class="zam-toggle-sub">Vypni ak nemáš zamestnávateľa</div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="toggleZam" ${zamData.maZamestnanie ? 'checked' : ''} onchange="zamToggle()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Príjmy zo zamestnania -->
+      <div class="zam-form-card" id="zamFormCard" ${!zamData.maZamestnanie ? 'style="opacity:0.4;pointer-events:none"' : ''}>
+        <div class="zam-form-header">
+          <div class="zam-form-header-icon" style="background:rgba(0,153,255,0.12)">📋</div>
+          <div>
+            <div class="zam-form-title">Potvrdenie o zdaniteľných príjmoch</div>
+            <div class="zam-form-subtitle">Údaje od zamestnávateľa za rok 2025</div>
+          </div>
+        </div>
+        <div class="zam-form-body">
+
+          <div class="field-group">
+            <label class="field-label" for="hrubyPrijem">
+              Úhrn zdaniteľných príjmov § 5
+              <span class="field-hint">Riadok 01 na potvrdení od zamestnávateľa</span>
+            </label>
+            <div class="field-prefix-wrap">
+              <span class="field-prefix">EUR</span>
+              <input class="field-input" type="number" id="hrubyPrijem" placeholder="napr. 24 000"
+                value="${zamData.hrubyPrijem}" min="0" step="0.01" oninput="zamInput('hrubyPrijem', this.value)">
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="odvodyZamestnanca">
+              Odvody zamestnanca (zdravotné + sociálne)
+              <span class="field-hint">Riadok 05 — zaplatené povinné poistné</span>
+            </label>
+            <div class="field-prefix-wrap">
+              <span class="field-prefix">EUR</span>
+              <input class="field-input" type="number" id="odvodyZamestnanca" placeholder="napr. 3 360"
+                value="${zamData.odvodyZamestnanca}" min="0" step="0.01" oninput="zamInput('odvodyZamestnanca', this.value)">
+            </div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px">
+              💡 Orientačne: ~14% hrubého (zdravotné 4% + sociálne 9,4% + úrazové 0,8%)
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="danPreddavky">
+              Preddavky na daň zrazené zamestnávateľom
+              <span class="field-hint">Riadok 09 — daň odviedol zamestnávateľ za teba</span>
+            </label>
+            <div class="field-prefix-wrap">
+              <span class="field-prefix">EUR</span>
+              <input class="field-input" type="number" id="danPreddavky" placeholder="napr. 2 850"
+                value="${zamData.danPreddavky}" min="0" step="0.01" oninput="zamInput('danPreddavky', this.value)">
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Nezdaniteľné časti a bonusy -->
+      <div class="zam-form-card">
+        <div class="zam-form-header">
+          <div class="zam-form-header-icon" style="background:rgba(0,212,170,0.1)">✂️</div>
+          <div>
+            <div class="zam-form-title">Nezdaniteľné časti & daňové bonusy</div>
+            <div class="zam-form-subtitle">Znižujú tvoj základ dane</div>
+          </div>
+        </div>
+        <div class="zam-form-body">
+
+          <div class="zam-toggle-wrap">
+            <div>
+              <div class="zam-toggle-label">Nezdaniteľná časť ZD na daňovníka</div>
+              <div class="zam-toggle-sub">${fmtEur(NEZDANITELNA_2025)} ročne (2025) — uplatni ak zamestnávateľ neuplatnil</div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="toggleNezdanitelna" ${zamData.uplatnitNezdanitelnu ? 'checked' : ''} onchange="zamInput('uplatnitNezdanitelnu', this.checked)">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="zam-toggle-wrap">
+            <div>
+              <div class="zam-toggle-label">Daňový bonus na deti</div>
+              <div class="zam-toggle-sub">Ak máš deti do 25 rokov</div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="toggleBonus" ${zamData.uplatnitBonus ? 'checked' : ''} onchange="zamBonusToggle(this.checked)">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="field-group" id="detiField" style="${!zamData.uplatnitBonus ? 'display:none' : ''}">
+            <label class="field-label" for="pocetDeti">Počet detí</label>
+            <input class="field-input" type="number" id="pocetDeti" placeholder="0" min="0" max="10"
+              value="${zamData.pocetDeti || ''}" oninput="zamInput('pocetDeti', parseInt(this.value)||0)" style="max-width:100px">
+          </div>
+
+          <div class="nezdanitelna-block">
+            <b>Orientačný prehľad nezdaniteľných častí 2025:</b>
+            <div class="nezdanitelna-row"><span>Na daňovníka (§ 11 ods. 2)</span><span>${fmtEur(NEZDANITELNA_2025)}</span></div>
+            <div class="nezdanitelna-row"><span>Daňový bonus na dieťa (do 15r.)</span><span>100 EUR/mesiac</span></div>
+            <div class="nezdanitelna-row"><span>Daňový bonus na dieťa (15–25r.)</span><span>50 EUR/mesiac</span></div>
+          </div>
+
+        </div>
+      </div>
+
+    </div><!-- /left -->
+
+    <!-- RIGHT: LIVE PREVIEW -->
+    <div>
+      <div class="zam-preview-card" id="zamPreview">
+        <!-- filled by updatePreview() -->
+      </div>
+    </div>
+  </div>
+  `;
+
+  updatePreview();
+}
+
+function zamToggle() {
+  zamData.maZamestnanie = document.getElementById('toggleZam').checked;
+  const card = document.getElementById('zamFormCard');
+  if (card) {
+    card.style.opacity = zamData.maZamestnanie ? '1' : '0.4';
+    card.style.pointerEvents = zamData.maZamestnanie ? '' : 'none';
+  }
+  updatePreview();
+}
+
+function zamBonusToggle(checked) {
+  zamData.uplatnitBonus = checked;
+  const f = document.getElementById('detiField');
+  if (f) f.style.display = checked ? '' : 'none';
+  updatePreview();
+}
+
+function zamInput(field, val) {
+  zamData[field] = val;
+  // highlight filled inputs
+  const el = document.getElementById(field);
+  if (el && el.type === 'number') {
+    el.classList.toggle('filled', parseFloat(val) > 0);
+  }
+  updatePreview();
+}
+
+function updatePreview() {
+  const preview = document.getElementById('zamPreview');
+  if (!preview) return;
+
+  const inv = parsedData ? calcAll(parsedData) : null;
+
+  const hrubý = parseFloat(zamData.hrubyPrijem) || 0;
+  const odvody = parseFloat(zamData.odvodyZamestnanca) || 0;
+  const preddavky = parseFloat(zamData.danPreddavky) || 0;
+  const nezdanitelna = zamData.uplatnitNezdanitelnu ? NEZDANITELNA_2025 : 0;
+  const bonusDeti = zamData.uplatnitBonus ? ((parseInt(zamData.pocetDeti) || 0) * DANOVY_BONUS_DIETA_2025 * 12) : 0;
+
+  // § 5 základ
+  const zd5 = zamData.maZamestnanie ? Math.max(0, hrubý - odvody) : 0;
+  // § 7 základ (dividendy)
+  const zd7 = inv ? Math.max(0, inv.zakladDane7) : 0;
+  // § 8 základ (STC + CFD)
+  const zd8 = inv ? Math.max(0, inv.zakladDane8) : 0;
+
+  // Nezdaniteľná časť sa uplatňuje LEN na § 5 základ (nie na § 7 a § 8)
+  const zd5PoNezdanitelnej = Math.max(0, zd5 - nezdanitelna);
+  const celkovyZaklad = zd5PoNezdanitelnej + zd7 + zd8;
+
+  // Daňová sadzba: 19% do 41 445,46 EUR (2025), 25% nad
+  const HRANICA_19 = 41445.46;
+  let danPovinnost = 0;
+  if (celkovyZaklad <= HRANICA_19) {
+    danPovinnost = celkovyZaklad * 0.19;
+  } else {
+    danPovinnost = HRANICA_19 * 0.19 + (celkovyZaklad - HRANICA_19) * 0.25;
+  }
+
+  // Daňový bonus znižuje daň
+  const danPoBonus = Math.max(0, danPovinnost - bonusDeti);
+
+  // Doplatok / preplatok
+  const doplatok = danPoBonus - preddavky;
+
+  const f = fmtEur;
+  const cc = n => n > 0 ? 'pos' : n < 0 ? 'neg' : 'neutral';
+
+  preview.innerHTML = `
+    <div class="zam-preview-header">
+      <div class="zam-preview-title">Živý prehľad základu dane</div>
+      <div class="zam-preview-badge">live</div>
+    </div>
+
+    <div class="prev-row sep-row"><div class="prev-row-label">PRÍJMY ZO ZAMESTNANIA § 5</div><div></div></div>
+    <div class="prev-row">
+      <div class="prev-row-label">Hrubý príjem<small>Riadok 01 potvrdenia</small></div>
+      <div class="prev-row-val">${f(hrubý)}</div>
+    </div>
+    <div class="prev-row">
+      <div class="prev-row-label">− Odvody zamestnanca<small>Povinné poistné</small></div>
+      <div class="prev-row-val neg">− ${f(odvody)}</div>
+    </div>
+    ${nezdanitelna > 0 ? `<div class="prev-row">
+      <div class="prev-row-label">− Nezdaniteľná časť § 11<small>Na daňovníka</small></div>
+      <div class="prev-row-val neg">− ${f(nezdanitelna)}</div>
+    </div>` : ''}
+    <div class="prev-row" style="background:rgba(0,153,255,0.04)">
+      <div class="prev-row-label" style="color:var(--accent2)">= Základ dane § 5</div>
+      <div class="prev-row-val" style="color:var(--accent2)">${f(zd5PoNezdanitelnej)}</div>
+    </div>
+
+    <div class="prev-row sep-row"><div class="prev-row-label">INVESTIČNÉ PRÍJMY</div><div></div></div>
+    <div class="prev-row">
+      <div class="prev-row-label">Základ § 8 (Akcie, ETF, CFD)<small>${inv ? '' : 'Načítaj XTB súbor'}</small></div>
+      <div class="prev-row-val ${cc(zd8)}">${inv ? f(zd8) : '—'}</div>
+    </div>
+    <div class="prev-row">
+      <div class="prev-row-label">Základ § 7 (Dividendy)<small>${inv ? '' : 'Načítaj XTB súbor'}</small></div>
+      <div class="prev-row-val ${cc(zd7)}">${inv ? f(zd7) : '—'}</div>
+    </div>
+
+    <div class="prev-row sep-row"><div class="prev-row-label">VÝPOČET DANE</div><div></div></div>
+    <div class="prev-row">
+      <div class="prev-row-label">Celkový základ dane<small>§5 + §7 + §8</small></div>
+      <div class="prev-row-val">${f(celkovyZaklad)}</div>
+    </div>
+    <div class="prev-row">
+      <div class="prev-row-label">Daňová povinnosť<small>${celkovyZaklad > HRANICA_19 ? '19% / 25% (progresívne)' : '19% sadzba'}</small></div>
+      <div class="prev-row-val">${f(danPovinnost)}</div>
+    </div>
+    ${bonusDeti > 0 ? `<div class="prev-row">
+      <div class="prev-row-label">− Daňový bonus na deti<small>${zamData.pocetDeti} dieťa/detí × 12 mes.</small></div>
+      <div class="prev-row-val neg">− ${f(bonusDeti)}</div>
+    </div>` : ''}
+    <div class="prev-row">
+      <div class="prev-row-label">− Preddavky zamestnávateľa<small>Už odvedené</small></div>
+      <div class="prev-row-val neg">− ${f(preddavky)}</div>
+    </div>
+
+    <div class="prev-row total-row">
+      <div class="prev-row-label">${doplatok >= 0 ? '⚠ Doplatok dane' : '✓ Preplatok dane'}<small>${doplatok >= 0 ? 'Treba doplatiť do 31.3.' : 'Vráti daňový úrad'}</small></div>
+      <div class="prev-row-val ${doplatok >= 0 ? 'neg' : 'pos'}">${doplatok >= 0 ? '' : '+ '}${f(Math.abs(doplatok))}</div>
+    </div>
+
+    <div style="padding:14px 20px;font-size:10px;color:var(--text3);line-height:1.6;border-top:1px solid var(--border)">
+      ⚠ Orientačný výpočet. Nezohľadňuje zdravotné odvody z § 7/§ 8 príjmov (rieši Krok 4) ani prípadné odpočty príspevkov na DDS/III. pilier. Daňový poradca odporúčaný.
+    </div>
+  `;
+}
+
+function fmtEur(n) {
+  if (n === null || n === undefined || isNaN(n)) return '0,00 EUR';
+  return Math.abs(n).toLocaleString('sk-SK', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' EUR';
+}
+
+// ═══════════════════════════════════════════════
+//  DAŇ & ODVODY ENGINE
+// ═══════════════════════════════════════════════
+let danCache = null;
+
+// 2025 constants
+const HRANICA_19 = 41445.46;      // hranica 19%/25% sadzby
+const SADZBA_19 = 0.19;
+const SADZBA_25 = 0.25;
+const ZO_SADZBA = 0.14;           // zdravotné odvody z § 7 a § 8
+const ZO_MIN_VYMIAR = 0;          // nie je min. vymeriavací základ pre pasívne príjmy
+const NEZDANITELNA = 4961.40;
+const BONUS_DO15 = 100.00;        // EUR/mesiac dieťa do 15r
+const BONUS_15_25 = 50.00;        // EUR/mesiac dieťa 15-25r
+
+function calcDan() {
+  const inv = parsedData ? calcAll(parsedData) : null;
+
+  // § 5 — zamestnanie
+  const hrubý5   = parseFloat(zamData.hrubyPrijem) || 0;
+  const odvody5  = parseFloat(zamData.odvodyZamestnanca) || 0;
+  const predd5   = parseFloat(zamData.danPreddavky) || 0;
+  const nezdanit = zamData.uplatnitNezdanitelnu ? NEZDANITELNA : 0;
+  const bonusDeti = zamData.uplatnitBonus ? ((parseInt(zamData.pocetDeti)||0) * BONUS_DO15 * 12) : 0;
+
+  const zd5_pred = zamData.maZamestnanie ? Math.max(0, hrubý5 - odvody5) : 0;
+  const zd5      = Math.max(0, zd5_pred - nezdanit);
+
+  // § 7 — dividendy (základ = hrubé dividendy)
+  const zd7 = inv ? Math.max(0, inv.zakladDane7) : 0;
+  // § 8 — akcie/ETF/CFD
+  const zd8 = inv ? Math.max(0, inv.zakladDane8) : 0;
+
+  // Zdravotné odvody z pasívnych príjmov (§ 7 + § 8)
+  // Vymeriavací základ = § 7 + § 8 (po uplatnení strát — straty < 0 sú 0, takže zd7/zd8 sú max 0)
+  const zo_vymiar = zd7 + zd8;
+  const zo_investicie = zo_vymiar * ZO_SADZBA;
+
+  // Celkový základ dane (ZO z investícií sa odpočítava od základu pre daňový výpočet? NIE — zdravotné odvody z investícií NIE sú odpočítateľné od ZD)
+  const celkovyZD = zd5 + zd7 + zd8;
+
+  // Daň
+  let dan = 0;
+  if (celkovyZD <= HRANICA_19) {
+    dan = celkovyZD * SADZBA_19;
+  } else {
+    dan = HRANICA_19 * SADZBA_19 + (celkovyZD - HRANICA_19) * SADZBA_25;
+  }
+
+  // Daňový bonus znižuje daň
+  const danPoBonus = Math.max(0, dan - bonusDeti);
+
+  // Doplatok dane = daňová povinnosť − preddavky zamestnávateľa
+  const doplatokDane = danPoBonus - predd5;
+
+  // Celkové záväzky
+  const celkoveZavazky = Math.max(0, doplatokDane) + zo_investicie;
+
+  return {
+    // vstupy
+    hrubý5, odvody5, predd5, nezdanit, bonusDeti,
+    // základy
+    zd5_pred, zd5, zd7, zd8, celkovyZD,
+    // dan
+    dan, danPoBonus, doplatokDane,
+    // odvody
+    zo_vymiar, zo_investicie,
+    // finál
+    celkoveZavazky,
+    // pomocné
+    inv,
+    sadzka: celkovyZD > HRANICA_19 ? '19% / 25%' : '19%'
+  };
+}
+
+function renderDanScreen() {
+  const screen = document.getElementById('danScreen');
+
+  // Update nav
+  document.getElementById('step3-nav').classList.remove('active');
+  document.getElementById('step3-nav').classList.add('done');
+  document.getElementById('step4-nav').classList.add('active');
+  document.getElementById('headerBadge').textContent = 'Krok 4 / 5 · Daň & Odvody';
+
+  const d = calcDan();
+  const f = fmtEur;
+  const cc = n => n > 0 ? 'pos' : n < 0 ? 'neg' : 'neutral';
+  const sign = n => n >= 0 ? '' : '−';
+
+  const noInv = !parsedData;
+  const noZam = !zamData.maZamestnanie && !parsedData;
+
+  screen.innerHTML = `
+  <div class="dan-layout">
+
+    ${noInv ? `<div class="warning-box"><span class="warning-box-icon">⚠️</span><span>Nenahrali ste XTB Fiscal Report — investičné príjmy sú 0. Pre úplný výpočet nahrajte súbor v záložke <b>Import & Dáta</b>.</span></div>` : ''}
+
+    <!-- ZÁKLAD DANE PREHĽAD -->
+    <div class="dan-block">
+      <div class="dan-block-header">
+        <div class="dan-block-header-left">
+          <div class="dan-block-icon" style="background:rgba(0,153,255,0.12)">📐</div>
+          <div>
+            <div class="dan-block-title">Základ dane — prehľad</div>
+            <div class="dan-block-sub">Všetky príjmy pred výpočtom dane</div>
+          </div>
+        </div>
+        <div class="dan-block-amount">${f(d.celkovyZD)}</div>
+      </div>
+
+      <div class="dan-row">
+        <div class="dan-row-label">Hrubý príjem § 5<small>Zo zamestnania — riadok 01 potvrdenia</small></div>
+        <div class="dan-row-val">${f(d.hrubý5)}</div>
+      </div>
+      <div class="dan-row">
+        <div class="dan-row-label">− Odvody zamestnanca § 5<small>Povinné poistné</small></div>
+        <div class="dan-row-val neg">− ${f(d.odvody5)}</div>
+      </div>
+      ${d.nezdanit > 0 ? `<div class="dan-row">
+        <div class="dan-row-label">− Nezdaniteľná časť § 11<small>Na daňovníka 2025</small></div>
+        <div class="dan-row-val neg">− ${f(d.nezdanit)}</div>
+      </div>` : ''}
+      <div class="dan-row dan-sub">
+        <div class="dan-row-label">= Základ dane § 5</div>
+        <div class="dan-row-val">${f(d.zd5)}</div>
+      </div>
+
+      <div class="dan-row" style="background:rgba(0,0,0,0.15)">
+        <div class="dan-row-label" style="color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:0.05em;font-family:'DM Mono',monospace">INVESTIČNÉ PRÍJMY</div>
+        <div></div>
+      </div>
+      <div class="dan-row">
+        <div class="dan-row-label">Základ dane § 8 (Akcie, ETF, CFD)<small>${noInv ? 'Nahraj XTB súbor' : 'Uzavreté pozície — čistý zisk'}</small></div>
+        <div class="dan-row-val ${cc(d.zd8)}">${f(d.zd8)}</div>
+      </div>
+      <div class="dan-row">
+        <div class="dan-row-label">Základ dane § 7 (Dividendy)<small>${noInv ? 'Nahraj XTB súbor' : 'Hrubé dividendy'}</small></div>
+        <div class="dan-row-val ${cc(d.zd7)}">${f(d.zd7)}</div>
+      </div>
+
+      <div class="dan-row dan-hl">
+        <div class="dan-row-label">✦ Celkový základ dane<small>§ 5 + § 7 + § 8</small></div>
+        <div class="dan-row-val">${f(d.celkovyZD)}</div>
+      </div>
+    </div>
+
+    <!-- VÝPOČET DANE -->
+    <div class="odvody-grid">
+      <div class="dan-block">
+        <div class="dan-block-header">
+          <div class="dan-block-header-left">
+            <div class="dan-block-icon" style="background:rgba(255,77,109,0.1)">📊</div>
+            <div>
+              <div class="dan-block-title">Výpočet dane z príjmov</div>
+              <div class="dan-block-sub">Sadzba: ${d.sadzka}</div>
+            </div>
+          </div>
+          <div class="dan-block-amount ${cc(d.danPoBonus)}">${f(d.danPoBonus)}</div>
+        </div>
+
+        ${d.celkovyZD > HRANICA_19 ? `
+        <div class="dan-row dan-warn">
+          <div class="dan-row-label">⚠ Progresívna sadzba<small>Príjem presahuje hranicu ${f(HRANICA_19)}</small></div>
+          <div class="dan-row-val">19% + 25%</div>
+        </div>
+        <div class="dan-row">
+          <div class="dan-row-label">Daň z prvého pásma<small>Do ${f(HRANICA_19)} × 19%</small></div>
+          <div class="dan-row-val">${f(HRANICA_19 * SADZBA_19)}</div>
+        </div>
+        <div class="dan-row">
+          <div class="dan-row-label">Daň z druhého pásma<small>Nad hranicu × 25%</small></div>
+          <div class="dan-row-val">${f((d.celkovyZD - HRANICA_19) * SADZBA_25)}</div>
+        </div>` : `
+        <div class="dan-row">
+          <div class="dan-row-label">Daňová povinnosť<small>${f(d.celkovyZD)} × 19%</small></div>
+          <div class="dan-row-val">${f(d.dan)}</div>
+        </div>`}
+
+        ${d.bonusDeti > 0 ? `<div class="dan-row">
+          <div class="dan-row-label">− Daňový bonus na deti<small>${zamData.pocetDeti} dieťa/detí × 12 mes.</small></div>
+          <div class="dan-row-val neg">− ${f(d.bonusDeti)}</div>
+        </div>` : ''}
+
+        <div class="dan-row dan-sub">
+          <div class="dan-row-label">= Daňová povinnosť po bonuse</div>
+          <div class="dan-row-val">${f(d.danPoBonus)}</div>
+        </div>
+        <div class="dan-row">
+          <div class="dan-row-label">− Preddavky zamestnávateľa<small>Už odvedené v priebehu roka</small></div>
+          <div class="dan-row-val neg">− ${f(d.predd5)}</div>
+        </div>
+        <div class="dan-row dan-hl">
+          <div class="dan-row-label">${d.doplatokDane >= 0 ? '⚠ Doplatok dane' : '✓ Preplatok dane'}<small>${d.doplatokDane >= 0 ? 'Treba uhradiť do 31.3.2026' : 'Vráti daňový úrad'}</small></div>
+          <div class="dan-row-val ${d.doplatokDane >= 0 ? 'neg' : 'pos'}">${d.doplatokDane < 0 ? '+ ' : ''}${f(Math.abs(d.doplatokDane))}</div>
+        </div>
+      </div>
+
+      <!-- ZDRAVOTNÉ ODVODY Z INVESTÍCIÍ -->
+      <div class="dan-block">
+        <div class="dan-block-header">
+          <div class="dan-block-header-left">
+            <div class="dan-block-icon" style="background:rgba(0,212,170,0.1)">🏥</div>
+            <div>
+              <div class="dan-block-title">Zdravotné odvody z investícií</div>
+              <div class="dan-block-sub">§ 7 + § 8 príjmy podliehajú 14% ZO</div>
+            </div>
+          </div>
+          <div class="dan-block-amount neg">${f(d.zo_investicie)}</div>
+        </div>
+
+        <div class="dan-row">
+          <div class="dan-row-label">Vymeriavací základ<small>§ 7 + § 8 (kladné hodnoty)</small></div>
+          <div class="dan-row-val">${f(d.zo_vymiar)}</div>
+        </div>
+        <div class="dan-row">
+          <div class="dan-row-label">Sadzba zdravotných odvodov<small>Pasívne príjmy FO</small></div>
+          <div class="dan-row-val">14 %</div>
+        </div>
+        <div class="dan-row dan-hl">
+          <div class="dan-row-label">= Zdravotné odvody z investícií<small>Platíš ty — nie zamestnávateľ</small></div>
+          <div class="dan-row-val neg">${f(d.zo_investicie)}</div>
+        </div>
+        <div class="dan-row" style="background:rgba(255,196,67,0.04)">
+          <div class="dan-row-label dan-warn" style="color:var(--yellow)">ℹ Splatnosť<small>Do 8 dní od podania DP — najneskôr do 8.4.2026</small></div>
+          <div class="dan-row-val neutral">31.3.2026</div>
+        </div>
+        <div class="dan-row">
+          <div class="dan-row-label">Zdravotná poisťovňa<small>Platba na účet tvojej ZP</small></div>
+          <div class="dan-row-val neutral">ZP priamo</div>
+        </div>
+
+        <div style="padding:14px 20px">
+          <div class="info-box">
+            <span style="font-size:14px;flex-shrink:0">ℹ</span>
+            <span>ZO z investícií sa <b>platia zdravotnej poisťovni</b>, nie daňovému úradu. Po podaní DP ti ZP vykoná ročné zúčtovanie a pošle výmer.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FINÁLNA KARTA -->
+    <div class="final-card">
+      <div class="final-card-header">
+        <div>
+          <div class="final-card-title">Celkové záväzky k úhrade</div>
+          <div class="final-card-sub">Suma ktorú reálne musíš doplatiť (daň + zdravotné odvody z investícií)</div>
+        </div>
+        <div style="text-align:right">
+          <div class="final-result-num ${d.celkoveZavazky > 0 ? 'neg' : 'pos'}">${f(d.celkoveZavazky)}</div>
+          <div class="final-result-label">${d.celkoveZavazky > 0 ? 'treba doplatiť' : 'preplatok / nič nedoplácaš'}</div>
+        </div>
+      </div>
+      <div class="final-grid">
+        <div class="final-cell">
+          <div class="final-cell-label">Doplatok dane</div>
+          <div class="final-cell-val ${d.doplatokDane >= 0 ? 'neg' : 'pos'}">${d.doplatokDane < 0 ? '+ ' : ''}${f(Math.abs(d.doplatokDane))}</div>
+          <div class="final-cell-note">${d.doplatokDane >= 0 ? 'Na účet daňového úradu do 31.3.2026' : 'Vrátia ti'}</div>
+        </div>
+        <div class="final-cell">
+          <div class="final-cell-label">Zdravotné odvody (invest.)</div>
+          <div class="final-cell-val neg">${f(d.zo_investicie)}</div>
+          <div class="final-cell-note">Na účet zdravotnej poisťovne</div>
+        </div>
+        <div class="final-cell">
+          <div class="final-cell-label">Efektívna sadzba dane</div>
+          <div class="final-cell-val">${d.celkovyZD > 0 ? (d.dan / d.celkovyZD * 100).toFixed(2) : '0,00'} %</div>
+          <div class="final-cell-note">Daň / celkový základ dane</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DEADLINES -->
+    <div class="dan-block">
+      <div class="dan-block-header">
+        <div class="dan-block-header-left">
+          <div class="dan-block-icon" style="background:rgba(255,196,67,0.1)">📅</div>
+          <div>
+            <div class="dan-block-title">Termíny a povinnosti</div>
+            <div class="dan-block-sub">Daňové priznanie za rok 2025</div>
+          </div>
+        </div>
+      </div>
+      <div class="dan-row">
+        <div class="dan-row-label">Podanie DP typ B<small>Daňový úrad / finančnasprava.sk</small></div>
+        <div class="dan-row-val" style="color:var(--yellow)">31. 3. 2026</div>
+      </div>
+      <div class="dan-row">
+        <div class="dan-row-label">Odklad DP (možný do 30.6.)<small>Oznámenie daňovému úradu do 31.3.2026</small></div>
+        <div class="dan-row-val neutral">30. 6. 2026</div>
+      </div>
+      <div class="dan-row">
+        <div class="dan-row-label">Úhrada doplatkudane<small>Rovnaký termín ako podanie DP</small></div>
+        <div class="dan-row-val ${d.doplatokDane > 0 ? 'neg' : 'neutral'}">${d.doplatokDane > 0 ? '31. 3. 2026' : '—'}</div>
+      </div>
+      <div class="dan-row">
+        <div class="dan-row-label">Zdravotné odvody z investícií<small>Do 8 dní od podania DP</small></div>
+        <div class="dan-row-val ${d.zo_investicie > 0 ? 'neg' : 'neutral'}">${d.zo_investicie > 0 ? '8.4. 2026' : '—'}</div>
+      </div>
+      <div class="dan-row">
+        <div class="dan-row-label">Potvrdenie o príjmoch od zamestnávateľa<small>Zamestnávateľ ti ho musí dať do 10.2.2026</small></div>
+        <div class="dan-row-val neutral">10. 2. 2026</div>
+      </div>
+    </div>
+
+    <div class="warning-box">
+      <span class="warning-box-icon">⚠️</span>
+      <span>Tento výpočet je <b>orientačný</b> a nezohľadňuje všetky individuálne situácie (príspevky na DDS/III. pilier, iné odpočty, zahraničné príjmy, zápočet zahraničnej dane). Pre finálne podanie DP odporúčame konzultáciu s daňovým poradcom alebo použitie oficiálneho formulára na <b>financnasprava.sk</b>.</span>
+    </div>
+
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════
+//  CALCULATION ENGINE
+// ═══════════════════════════════════════════════
+
+function calcAll(data) {
+  const result = {
+    stc: calcSTC([...data.stcTransactions, ...data.fractionalTransactions]),
+    cfd: calcCFD(data.cfdTransactions),
+    dividends: calcDividends(data.dividendTransactions),
+    fees: calcFees(data.fees)
+  };
+  // Základ dane § 8 = STC čistý zisk + CFD net P/L (straty z CFD len do výšky ziskov z CFD)
+  const stcBase = Math.max(0, result.stc.totalNetProfit);
+  const cfdBase = result.cfd.netPL > 0 ? result.cfd.netPL : 0; // straty neznižujú iné príjmy
+  result.zakladDane8 = stcBase + cfdBase;
+  // Dividendy: § 7 (pasívny príjem) — základ = hrubé dividendy, zrážková daň sa môže odpočítať
+  result.zakladDane7 = result.dividends.totalGross;
+  result.stcLoss = result.stc.totalNetProfit < 0 ? result.stc.totalNetProfit : 0;
+  result.cfdLoss = result.cfd.netPL < 0 ? result.cfd.netPL : 0;
+  return result;
+}
+
+// ── STC / Frakčné (XTB už poskytuje čistý zisk per transakcia) ──
+function calcSTC(txs) {
+  // XTB Fiscal Report má priamo netProfit per uzavretá transakcia
+  // Zoskupíme podľa symbolu pre prehľad
+  const bySymbol = {};
+  let totalNetProfit = 0;
+  let totalGrossProfit = 0;
+  let totalCommission = 0;
+  let totalSaleVal = 0;
+  let totalPurchaseVal = 0;
+
+  txs.forEach(tx => {
+    const sym = tx.symbol || 'N/A';
+    if (!bySymbol[sym]) bySymbol[sym] = { symbol: sym, txCount: 0, netProfit: 0, grossProfit: 0, commission: 0, saleVal: 0, purchaseVal: 0 };
+    bySymbol[sym].txCount++;
+    bySymbol[sym].netProfit += tx.netProfit || 0;
+    bySymbol[sym].grossProfit += tx.grossProfit || 0;
+    bySymbol[sym].commission += tx.commission || 0;
+    bySymbol[sym].saleVal += tx.saleVal || 0;
+    bySymbol[sym].purchaseVal += tx.purchaseVal || 0;
+    totalNetProfit += tx.netProfit || 0;
+    totalGrossProfit += tx.grossProfit || 0;
+    totalCommission += tx.commission || 0;
+    totalSaleVal += tx.saleVal || 0;
+    totalPurchaseVal += tx.purchaseVal || 0;
+  });
+
+  return {
+    bySymbol: Object.values(bySymbol).sort((a, b) => b.netProfit - a.netProfit),
+    totalNetProfit, totalGrossProfit, totalCommission,
+    totalSaleVal, totalPurchaseVal,
+    txCount: txs.length
+  };
+}
+
+// ── CFD ──
+function calcCFD(txs) {
+  let totalProfit = 0;
+  let totalLoss = 0;
+  let totalCommission = 0;
+  let totalSwap = 0;
+
+  const bySymbol = {};
+  txs.forEach(tx => {
+    const p = tx.profit || 0;
+    const c = tx.commission || 0;
+    const s = tx.swap || 0;
+    const net = p + c + s;
+    if (p > 0) totalProfit += p;
+    if (p < 0) totalLoss += p;
+    totalCommission += c;
+    totalSwap += s;
+    const sym = tx.symbol || 'N/A';
+    if (!bySymbol[sym]) bySymbol[sym] = { symbol: sym, txCount: 0, profit: 0, commission: 0, swap: 0 };
+    bySymbol[sym].txCount++;
+    bySymbol[sym].profit += p;
+    bySymbol[sym].commission += c;
+    bySymbol[sym].swap += s;
+  });
+
+  const netPL = totalProfit + totalLoss + totalCommission + totalSwap;
+  return {
+    bySymbol: Object.values(bySymbol).sort((a, b) => b.profit - a.profit),
+    totalProfit, totalLoss, totalCommission, totalSwap,
+    netPL, txCount: txs.length
+  };
+}
+
+// ── Dividendy ──
+function calcDividends(txs) {
+  let totalGross = 0;
+  let totalWithholding = 0;
+  let totalNet = 0;
+
+  const byCountryKey = {};
+  txs.forEach(tx => {
+    const eur = tx.amountEur || 0;
+    totalNet += eur;
+    // Zrážková daň nie je priamo v transaction liste, len v dividend summary
+    // country odhadneme z ISIN prvých 2 znakov
+    const country = tx.isin ? tx.isin.substring(0, 2) : 'XX';
+    if (!byCountryKey[country]) byCountryKey[country] = { country, gross: 0, net: 0, count: 0 };
+    byCountryKey[country].net += eur;
+    byCountryKey[country].count++;
+  });
+  totalGross = totalNet; // pre transaction list nemáme zrážku, použijeme net ako základ
+
+  return {
+    byCountry: Object.values(byCountryKey),
+    totalGross, totalWithholding, totalNet,
+    txCount: txs.length
+  };
+}
+
+// ── Poplatky ──
+function calcFees(fees) {
+  let total = 0;
+  fees.forEach(f => { total += f.amount || 0; });
+  return { total, count: fees.length };
+}
+
+// ═══════════════════════════════════════════════
+//  RENDER CALC SCREEN
+// ═══════════════════════════════════════════════
+let calcCache = null;
+
+function renderCalcScreen(data) {
+  const screen = document.getElementById('calcScreen');
+  if (calcCache) { screen.innerHTML = calcCache; return; }
+
+  const calc = calcAll(data);
+
+  const hasData = data.stcTransactions.length > 0 || data.fractionalTransactions.length > 0 ||
+                  data.cfdTransactions.length > 0 || data.dividendTransactions.length > 0;
+
+  if (!hasData) {
+    screen.innerHTML = `
+      <div class="empty-state" style="padding:60px 40px">
+        <div class="empty-state-icon">📭</div>
+        <div style="margin-top:8px">Žiadne uzavreté transakcie na kalkuláciu.<br>
+        <span style="color:var(--text3);font-size:11px;">Otvorené pozície sa nedaňujú, kým nie sú predané.</span></div>
+      </div>`;
+    return;
+  }
+
+  const pSign = n => n > 0 ? '<span class="pos">' : n < 0 ? '<span class="neg">' : '<span>';
+
+  screen.innerHTML = `
+
+  <div class="legend-box">
+    <b>Ako čítať kalkuláciu:</b> XTB Fiscal Report obsahuje čistý zisk/stratu per transakcia (po odpočítaní komisií). Aplikácia tieto hodnoty sumarizuje podľa § 8 ZDP (kapitálové príjmy). Dividendy sa zdaňujú podľa § 7 ZDP. <b>Otvorené pozície nie sú zahrnuté</b> — daňová povinnosť vzniká až pri predaji.
+  </div>
+
+  <!-- STC + Frakčné -->
+  <div class="calc-grid">
+    <div class="calc-block">
+      <div class="calc-block-header">
+        <div class="calc-block-icon" style="background:rgba(0,153,255,0.12)">📈</div>
+        <div class="calc-block-title">Akcie, ETF & Frakčné práva<br><small style="font-weight:400;color:var(--text2);font-size:10px;">§ 8 ods. 1 písm. e) ZDP</small></div>
+        <div class="calc-block-total ${calc.stc.totalNetProfit >= 0 ? 'pos' : 'neg'}">${fmtNum(calc.stc.totalNetProfit)} EUR</div>
+      </div>
+      <div class="calc-block-body">
+        <div class="calc-row">
+          <div class="calc-row-label">Celkový predajný výnos<small>Suma predajných hodnôt všetkých uzavretých pozícií</small></div>
+          <div class="calc-row-val">${fmtNum(calc.stc.totalSaleVal)} EUR</div>
+        </div>
+        <div class="calc-row">
+          <div class="calc-row-label">Celkové obstarávacie náklady<small>Nákupné hodnoty + komisie (odpočítateľné výdavky)</small></div>
+          <div class="calc-row-val neg">${fmtNum(calc.stc.totalPurchaseVal)} EUR</div>
+        </div>
+        <div class="calc-row">
+          <div class="calc-row-label">Komisie brokera<small>Zahrnuté v obstarávacích nákladoch</small></div>
+          <div class="calc-row-val neg">${fmtNum(calc.stc.totalCommission)} EUR</div>
+        </div>
+        <div class="calc-row subtotal">
+          <div class="calc-row-label">Hrubý zisk/strata</div>
+          <div class="calc-row-val ${calc.stc.totalGrossProfit >= 0 ? 'pos' : 'neg'}">${fmtNum(calc.stc.totalGrossProfit)} EUR</div>
+        </div>
+        <div class="calc-row highlight">
+          <div class="calc-row-label">✦ Čistý zisk/strata (základ § 8)<small>${calc.stc.txCount} uzavretých transakcií</small></div>
+          <div class="calc-row-val ${calc.stc.totalNetProfit >= 0 ? 'pos' : 'neg'}">${fmtNum(calc.stc.totalNetProfit)} EUR</div>
+        </div>
+        ${calc.stcLoss < 0 ? `<div class="calc-row" style="background:rgba(255,77,109,0.05)">
+          <div class="calc-row-label" style="color:var(--red)">⚠ Strata — neznižuje iné príjmy<small>Straty z akcií/ETF nemožno odpočítať od iných príjmov</small></div>
+          <div class="calc-row-val neg">${fmtNum(calc.stcLoss)} EUR</div>
+        </div>` : ''}
+      </div>
+    </div>
+
+    <!-- CFD -->
+    <div class="calc-block">
+      <div class="calc-block-header">
+        <div class="calc-block-icon" style="background:rgba(255,196,67,0.1)">⚡</div>
+        <div class="calc-block-title">CFD transakcie<br><small style="font-weight:400;color:var(--text2);font-size:10px;">§ 8 ods. 1 písm. e) ZDP</small></div>
+        <div class="calc-block-total ${calc.cfd.netPL >= 0 ? 'pos' : 'neg'}">${fmtNum(calc.cfd.netPL)} EUR</div>
+      </div>
+      <div class="calc-block-body">
+        <div class="calc-row">
+          <div class="calc-row-label">Súčet ziskov z CFD<small>Všetky kladné P/L pozície</small></div>
+          <div class="calc-row-val pos">${fmtNum(calc.cfd.totalProfit)} EUR</div>
+        </div>
+        <div class="calc-row">
+          <div class="calc-row-label">Súčet strát z CFD<small>Všetky záporné P/L pozície</small></div>
+          <div class="calc-row-val neg">${fmtNum(calc.cfd.totalLoss)} EUR</div>
+        </div>
+        <div class="calc-row">
+          <div class="calc-row-label">Komisie & swapy<small>Odpočítateľné výdavky</small></div>
+          <div class="calc-row-val neg">${fmtNum(calc.cfd.totalCommission + calc.cfd.totalSwap)} EUR</div>
+        </div>
+        <div class="calc-row highlight">
+          <div class="calc-row-label">✦ Net CFD P/L (základ § 8)<small>${calc.cfd.txCount} uzavretých CFD pozícií</small></div>
+          <div class="calc-row-val ${calc.cfd.netPL >= 0 ? 'pos' : 'neg'}">${fmtNum(calc.cfd.netPL)} EUR</div>
+        </div>
+        ${calc.cfdLoss < 0 ? `<div class="calc-row" style="background:rgba(255,77,109,0.05)">
+          <div class="calc-row-label" style="color:var(--red)">⚠ Strata CFD — neznižuje iné príjmy<small>Straty z CFD nemožno odpočítať od príjmov z akcií/ETF</small></div>
+          <div class="calc-row-val neg">${fmtNum(calc.cfdLoss)} EUR</div>
+        </div>` : ''}
+      </div>
+    </div>
+
+    <!-- Dividendy -->
+    <div class="calc-block">
+      <div class="calc-block-header">
+        <div class="calc-block-icon" style="background:rgba(0,212,170,0.1)">💰</div>
+        <div class="calc-block-title">Dividendy<br><small style="font-weight:400;color:var(--text2);font-size:10px;">§ 7 ods. 1 písm. g) ZDP — pasívny príjem</small></div>
+        <div class="calc-block-total pos">${fmtNum(calc.dividends.totalNet)} EUR</div>
+      </div>
+      <div class="calc-block-body">
+        ${calc.dividends.txCount === 0 ? `<div class="empty-state" style="padding:28px">📭 Žiadne dividendy v tomto roku</div>` : `
+        <div class="calc-row">
+          <div class="calc-row-label">Prijaté dividendy (EUR)<small>${calc.dividends.txCount} výplat</small></div>
+          <div class="calc-row-val pos">${fmtNum(calc.dividends.totalNet)} EUR</div>
+        </div>
+        <div class="calc-row highlight">
+          <div class="calc-row-label">✦ Základ dane § 7<small>Hrubé dividendy pred zrážkovou daňou</small></div>
+          <div class="calc-row-val pos">${fmtNum(calc.dividends.totalGross)} EUR</div>
+        </div>
+        <div class="calc-row" style="background:rgba(255,196,67,0.04)">
+          <div class="calc-row-label" style="color:var(--yellow)">ℹ Zrážková daň<small>Detailný prehľad je v sekcii Dividendy (záložka Import)</small></div>
+          <div class="calc-row-val neutral">viď Import</div>
+        </div>`}
+      </div>
+    </div>
+
+    <!-- Poplatky -->
+    <div class="calc-block">
+      <div class="calc-block-header">
+        <div class="calc-block-icon" style="background:rgba(138,151,168,0.1)">🏦</div>
+        <div class="calc-block-title">Poplatky & úroky<br><small style="font-weight:400;color:var(--text2);font-size:10px;">Informačne — viď poznámku</small></div>
+        <div class="calc-block-total ${calc.fees.total >= 0 ? 'pos' : 'neg'}">${fmtNum(calc.fees.total)} EUR</div>
+      </div>
+      <div class="calc-block-body">
+        ${calc.fees.count === 0 ? `<div class="empty-state" style="padding:28px">📭 Žiadne poplatky</div>` : `
+        <div class="calc-row">
+          <div class="calc-row-label">Celkové poplatky/bonusy/úroky<small>${calc.fees.count} položiek</small></div>
+          <div class="calc-row-val ${colorClass(calc.fees.total)}">${fmtNum(calc.fees.total)} EUR</div>
+        </div>
+        <div class="calc-row" style="background:rgba(255,196,67,0.04)">
+          <div class="calc-row-label" style="color:var(--yellow)">ℹ Zahrnuté v XTB výpočtoch<small>Tieto poplatky sú typicky súčasťou net P/L — neodpisuj dvakrát</small></div>
+          <div class="calc-row-val neutral">—</div>
+        </div>`}
+      </div>
+    </div>
+  </div>
+
+  <!-- Súhrnný základ dane -->
+  <div class="zaklad-block">
+    <div class="zaklad-header">
+      <div>
+        <div class="zaklad-title">Súhrnný základ dane</div>
+        <div class="zaklad-subtitle">Podklady pre Daňové priznanie FO typ B · zdaňovacie obdobie ${data.period || '2025'}</div>
+      </div>
+      <div class="zaklad-amount ${calc.zakladDane8 + calc.zakladDane7 >= 0 ? 'pos' : 'neg'}">${fmtNum(calc.zakladDane8 + calc.zakladDane7)} EUR</div>
+    </div>
+    <div class="zaklad-body">
+      <div class="zaklad-cell">
+        <div class="zaklad-cell-label">Základ § 8 (Akcie + ETF + CFD)</div>
+        <div class="zaklad-cell-val ${calc.zakladDane8 >= 0 ? 'pos' : 'neg'}">${fmtNum(calc.zakladDane8)} EUR</div>
+        <div class="zaklad-cell-note">Riadok 09 v DP typ B</div>
+      </div>
+      <div class="zaklad-cell">
+        <div class="zaklad-cell-label">Základ § 7 (Dividendy)</div>
+        <div class="zaklad-cell-val ${calc.zakladDane7 >= 0 ? 'pos' : 'neg'}">${fmtNum(calc.zakladDane7)} EUR</div>
+        <div class="zaklad-cell-note">Riadok 07/08 v DP typ B</div>
+      </div>
+      <div class="zaklad-cell">
+        <div class="zaklad-cell-label">Prenesené straty</div>
+        <div class="zaklad-cell-val neutral">—</div>
+        <div class="zaklad-cell-note">Straty z akcií/CFD sa neprevádzajú</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Prehľad po symboloch: STC -->
+  ${renderCalcSymbolTable(calc.stc.bySymbol, '📈 Akcie & ETF — prehľad po symboloch', 'stc')}
+
+  <!-- Prehľad po symboloch: CFD -->
+  ${calc.cfd.bySymbol.length > 0 ? renderCalcCFDSymbolTable(calc.cfd.bySymbol) : ''}
+  `;
+
+  calcCache = screen.innerHTML;
+}
+
+function renderCalcSymbolTable(rows, title, id) {
+  if (!rows.length) return '';
+  return `
+  <div class="calc-block" style="margin-bottom:16px">
+    <div class="calc-block-header">
+      <div class="calc-block-icon" style="background:rgba(0,153,255,0.1)">📋</div>
+      <div class="calc-block-title">${title}</div>
+    </div>
+    <div class="calc-block-body" style="overflow-x:auto">
+      <table class="fifo-table">
+        <thead><tr>
+          <th>Symbol</th><th>Transakcie</th><th>Predaj (EUR)</th>
+          <th>Nákup (EUR)</th><th>Komisia</th><th>Hrubý zisk</th><th>Čistý zisk</th>
+        </tr></thead>
+        <tbody>
+          ${rows.map(r => `<tr>
+            <td style="color:var(--accent2);font-weight:600;font-family:'Syne',sans-serif">${r.symbol}</td>
+            <td style="color:var(--text2)">${r.txCount}</td>
+            <td>${fmtNum(r.saleVal)}</td>
+            <td>${fmtNum(r.purchaseVal)}</td>
+            <td class="neg">${fmtNum(r.commission)}</td>
+            <td class="${colorClass(r.grossProfit)}">${fmtNum(r.grossProfit)}</td>
+            <td class="${colorClass(r.netProfit)}"><b>${fmtNum(r.netProfit)}</b></td>
+          </tr>`).join('')}
+          <tr style="background:var(--surface2);font-weight:600">
+            <td style="color:var(--text2)">SPOLU</td>
+            <td style="color:var(--text2)">${rows.reduce((s,r)=>s+r.txCount,0)}</td>
+            <td>${fmtNum(rows.reduce((s,r)=>s+r.saleVal,0))}</td>
+            <td>${fmtNum(rows.reduce((s,r)=>s+r.purchaseVal,0))}</td>
+            <td class="neg">${fmtNum(rows.reduce((s,r)=>s+r.commission,0))}</td>
+            <td class="${colorClass(rows.reduce((s,r)=>s+r.grossProfit,0))}">${fmtNum(rows.reduce((s,r)=>s+r.grossProfit,0))}</td>
+            <td class="${colorClass(rows.reduce((s,r)=>s+r.netProfit,0))}"><b>${fmtNum(rows.reduce((s,r)=>s+r.netProfit,0))}</b></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+function renderCalcCFDSymbolTable(rows) {
+  return `
+  <div class="calc-block" style="margin-bottom:16px">
+    <div class="calc-block-header">
+      <div class="calc-block-icon" style="background:rgba(255,196,67,0.1)">📋</div>
+      <div class="calc-block-title">⚡ CFD — prehľad po symboloch</div>
+    </div>
+    <div class="calc-block-body" style="overflow-x:auto">
+      <table class="fifo-table">
+        <thead><tr>
+          <th>Symbol</th><th>Transakcie</th><th>P/L</th><th>Komisia</th><th>Swap</th><th>Net</th>
+        </tr></thead>
+        <tbody>
+          ${rows.map(r => `<tr>
+            <td style="color:var(--accent2);font-weight:600;font-family:'Syne',sans-serif">${r.symbol}</td>
+            <td style="color:var(--text2)">${r.txCount}</td>
+            <td class="${colorClass(r.profit)}">${fmtNum(r.profit)}</td>
+            <td class="neg">${fmtNum(r.commission)}</td>
+            <td class="${colorClass(r.swap)}">${fmtNum(r.swap)}</td>
+            <td class="${colorClass(r.profit+r.commission+r.swap)}"><b>${fmtNum(r.profit+r.commission+r.swap)}</b></td>
+          </tr>`).join('')}
+          <tr style="background:var(--surface2);font-weight:600">
+            <td style="color:var(--text2)">SPOLU</td>
+            <td style="color:var(--text2)">${rows.reduce((s,r)=>s+r.txCount,0)}</td>
+            <td class="${colorClass(rows.reduce((s,r)=>s+r.profit,0))}">${fmtNum(rows.reduce((s,r)=>s+r.profit,0))}</td>
+            <td class="neg">${fmtNum(rows.reduce((s,r)=>s+r.commission,0))}</td>
+            <td class="${colorClass(rows.reduce((s,r)=>s+r.swap,0))}">${fmtNum(rows.reduce((s,r)=>s+r.swap,0))}</td>
+            <td class="${colorClass(rows.reduce((s,r)=>s+r.profit+r.commission+r.swap,0))}"><b>${fmtNum(rows.reduce((s,r)=>s+r.profit+r.commission+r.swap,0))}</b></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+// ═══════════════════════════════════════════════
+//  VÝSTUP SCREEN
+// ═══════════════════════════════════════════════
+let vystupCache = null;
+
+function renderVystupScreen() {
+  const screen = document.getElementById('vystupScreen');
+
+  // Nav
+  document.getElementById('step4-nav').classList.remove('active');
+  document.getElementById('step4-nav').classList.add('done');
+  document.getElementById('step5-nav').classList.add('active');
+  document.getElementById('headerBadge').textContent = 'Krok 5 / 5 · Výstup';
+
+  // Hide next button on last step
+  document.getElementById('btnNext').style.display = 'none';
+
+  const d = calcDan();
+  const inv = parsedData ? calcAll(parsedData) : null;
+  const f = fmtEur;
+  const fN = n => n !== null && n !== undefined ? f(n) : '0,00 EUR';
+  const cc = n => n > 0 ? 'pos' : n < 0 ? 'neg' : '';
+
+  const year = parsedData?.period?.split('/')[0] || '2025';
+  const meno = parsedData?.name || zamData.hrubyPrijem ? 'Norbert Petrovský' : '—';
+
+  // § 5 základ (pred nezdaniteľnou)
+  const zd5_plny = d.zd5_pred;   // hrubý − odvody
+  const zd8_raw  = inv ? inv.zakladDane8 : 0;
+  const zd7_raw  = inv ? inv.zakladDane7 : 0;
+
+  screen.innerHTML = `
+  <div class="vystup-layout">
+
+    <!-- TOP BANNER -->
+    <div class="vystup-banner">
+      <div>
+        <div class="vystup-banner-title">Numo · Daňové Priznanie FO typ B · ${year}</div>
+        <div class="vystup-banner-sub">Podklady pripravené · ${new Date().toLocaleDateString('sk-SK')} · ${meno}</div>
+      </div>
+      <div class="vystup-banner-nums">
+        <div class="vystup-num">
+          <div class="vystup-num-val ${d.doplatokDane >= 0 ? 'neg' : 'pos'}">${d.doplatokDane < 0 ? '+' : ''}${f(Math.abs(d.doplatokDane))}</div>
+          <div class="vystup-num-label">${d.doplatokDane >= 0 ? 'doplatok dane' : 'preplatok dane'}</div>
+        </div>
+        <div class="vystup-num">
+          <div class="vystup-num-val neg">${f(d.zo_investicie)}</div>
+          <div class="vystup-num-label">zdrav. odvody (invest.)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DP TYP B — PODKLADY -->
+    <div class="dp-card" id="dpCard">
+      <div class="dp-card-header">
+        <div>
+          <div class="dp-card-title">Podklady pre vyplnenie DP typ B</div>
+          <div class="dp-card-sub">Pripravené aplikáciou Numo · Daňové priznanie k dani z príjmov FO za rok ${year}</div>
+        </div>
+        <div class="dp-card-actions">
+          <button class="btn-copy" onclick="copyDP()">📋 Kopírovať hodnoty</button>
+          <button class="btn-print" onclick="window.print()">🖨 Tlačiť / PDF</button>
+        </div>
+      </div>
+
+      <div class="dp-section-title">ODDIEL VI — Príjmy zo závislej činnosti (§ 5)</div>
+
+      <div class="dp-row">
+        <div class="dp-row-num">01</div>
+        <div class="dp-row-label"><b>Úhrn príjmov zo závislej činnosti</b>Hrubý príjem od všetkých zamestnávateľov</div>
+        <div class="dp-row-val">${f(d.hrubý5)}</div>
+      </div>
+      <div class="dp-row">
+        <div class="dp-row-num">05</div>
+        <div class="dp-row-label"><b>Úhrn povinného poistného</b>Odvody zamestnanca (zdravotné + sociálne)</div>
+        <div class="dp-row-val">${f(d.odvody5)}</div>
+      </div>
+      <div class="dp-row">
+        <div class="dp-row-num">06</div>
+        <div class="dp-row-label"><b>Základ dane (čiastkový) § 5</b>Riadok 01 − riadok 05</div>
+        <div class="dp-row-val">${f(zd5_plny)}</div>
+      </div>
+      <div class="dp-row">
+        <div class="dp-row-num">09</div>
+        <div class="dp-row-label"><b>Preddavky na daň zrazené zamestnávateľom</b>Daň zaplatená zamestnávateľom počas roka</div>
+        <div class="dp-row-val">${f(d.predd5)}</div>
+      </div>
+
+      <div class="dp-section-title">ODDIEL VII — Príjmy z kapitálového majetku (§ 7)</div>
+
+      <div class="dp-row">
+        <div class="dp-row-num">07a</div>
+        <div class="dp-row-label"><b>Príjmy z dividend (§ 7 ods. 1 písm. g)</b>Hrubé dividendy prijaté cez XTB</div>
+        <div class="dp-row-val ${cc(zd7_raw)}">${f(zd7_raw)}</div>
+      </div>
+      <div class="dp-row dp-row-important">
+        <div class="dp-row-num">08</div>
+        <div class="dp-row-label"><b>Čiastkový základ dane § 7</b>Základ pre výpočet dane z dividend</div>
+        <div class="dp-row-val">${f(d.zd7)}</div>
+      </div>
+
+      <div class="dp-section-title">ODDIEL VIII — Ostatné príjmy (§ 8) — Akcie, ETF, CFD</div>
+
+      <div class="dp-row">
+        <div class="dp-row-num">09a</div>
+        <div class="dp-row-label"><b>Príjmy z predaja cenných papierov (§ 8 ods. 1 písm. e)</b>Celkový predajný výnos (Akcie + ETF + Frakčné)</div>
+        <div class="dp-row-val">${inv ? f(inv.stc.totalSaleVal) : '—'}</div>
+      </div>
+      <div class="dp-row">
+        <div class="dp-row-num">09b</div>
+        <div class="dp-row-label"><b>Výdavky k príjmom z CP</b>Nákupné hodnoty + komisie</div>
+        <div class="dp-row-val">${inv ? f(Math.abs(inv.stc.totalPurchaseVal) + Math.abs(inv.stc.totalCommission)) : '—'}</div>
+      </div>
+      <div class="dp-row">
+        <div class="dp-row-num">09c</div>
+        <div class="dp-row-label"><b>Príjmy z CFD (§ 8 ods. 1 písm. e)</b>Net P/L zo všetkých CFD pozícií</div>
+        <div class="dp-row-val ${cc(inv?.cfd?.netPL)}">${inv ? f(Math.max(0, inv.cfd.netPL)) : '—'}</div>
+      </div>
+      <div class="dp-row dp-row-important">
+        <div class="dp-row-num">10</div>
+        <div class="dp-row-label"><b>Čiastkový základ dane § 8</b>Celkový základ (Akcie + ETF + CFD)</div>
+        <div class="dp-row-val">${f(d.zd8)}</div>
+      </div>
+
+      <div class="dp-section-title">ODDIEL X — Výpočet dane a daňová povinnosť</div>
+
+      <div class="dp-row">
+        <div class="dp-row-num">36</div>
+        <div class="dp-row-label"><b>Nezdaniteľná časť ZD na daňovníka</b>${d.nezdanit > 0 ? 'Uplatnená' : 'Neuplatnená'} (§ 11 ods. 2)</div>
+        <div class="dp-row-val">${f(d.nezdanit)}</div>
+      </div>
+      <div class="dp-row">
+        <div class="dp-row-num">44</div>
+        <div class="dp-row-label"><b>Základ dane celkom</b>§ 5 + § 7 + § 8 po nezdaniteľných častiach</div>
+        <div class="dp-row-val">${f(d.celkovyZD)}</div>
+      </div>
+      <div class="dp-row">
+        <div class="dp-row-num">46</div>
+        <div class="dp-row-label"><b>Daň (sadzba ${d.sadzka})</b>Vypočítaná daňová povinnosť</div>
+        <div class="dp-row-val">${f(d.dan)}</div>
+      </div>
+      ${d.bonusDeti > 0 ? `<div class="dp-row">
+        <div class="dp-row-num">52</div>
+        <div class="dp-row-label"><b>Daňový bonus na vyživované deti</b>${zamData.pocetDeti} dieťa/detí × 12 mes.</div>
+        <div class="dp-row-val neg">− ${f(d.bonusDeti)}</div>
+      </div>` : ''}
+      <div class="dp-row">
+        <div class="dp-row-num">62</div>
+        <div class="dp-row-label"><b>Preddavky zrazené zamestnávateľom</b>Zaplatené v priebehu roka</div>
+        <div class="dp-row-val neg">− ${f(d.predd5)}</div>
+      </div>
+      <div class="dp-row dp-row-important">
+        <div class="dp-row-num">76</div>
+        <div class="dp-row-label"><b>${d.doplatokDane >= 0 ? 'Daň na úhradu' : 'Daňový preplatok'}</b>${d.doplatokDane >= 0 ? 'Uhradiť na účet daňového úradu do 31.3.2026' : 'Daňový úrad vráti'}</div>
+        <div class="dp-row-val ${d.doplatokDane >= 0 ? 'neg' : 'pos'}">${f(Math.abs(d.doplatokDane))}</div>
+      </div>
+
+      <div class="dp-section-title">ZDRAVOTNÉ ODVODY Z INVESTÍCIÍ — osobitne ZP</div>
+
+      <div class="dp-row">
+        <div class="dp-row-num">ZO</div>
+        <div class="dp-row-label"><b>Vymeriavací základ (§ 7 + § 8)</b>Základ pre výpočet zdravotných odvodov</div>
+        <div class="dp-row-val">${f(d.zo_vymiar)}</div>
+      </div>
+      <div class="dp-row dp-row-important">
+        <div class="dp-row-num">14%</div>
+        <div class="dp-row-label"><b>Zdravotné odvody k uhradeniu ZP</b>Platíš priamo zdravotnej poisťovni (nie DÚ)</div>
+        <div class="dp-row-val neg">${f(d.zo_investicie)}</div>
+      </div>
+    </div>
+
+    <!-- CHECKLIST -->
+    <div class="dp-card">
+      <div class="dp-card-header">
+        <div>
+          <div class="dp-card-title">✅ Checklist — kroky pred podaním</div>
+          <div class="dp-card-sub">Klikni na položku keď je hotová</div>
+        </div>
+      </div>
+      <div class="checklist" id="checklist">
+        ${[
+          ['Získaj Potvrdenie o zdaniteľných príjmoch od zamestnávateľa', 'Zamestnávateľ ho musí vydať do 10.2.2026'],
+          ['Stiahni si Fiscal Report z XTB za rok 2025', 'XTB platforma → História → Fiscal Report → Export XLSX'],
+          ['Skontroluj všetky transakcie v záložke Import & Dáta', 'Uisti sa že sú zobrazené všetky uzavreté pozície'],
+          ['Skontroluj výpočet v záložke Kalkulácia', 'Základ § 7 a § 8 — porovnaj s tvojim vlastným odhadom'],
+          ['Vyplň DP typ B na portáli Finančnej správy', 'financnasprava.sk → eSlužby → Podanie DP → FO typ B'],
+          ['Zadaj čiastkové základy § 5, § 7, § 8 podľa podkladov', 'Použite hodnoty z tabuľky Podklady pre DP vyššie'],
+          ['Uhraď doplatok dane na účet daňového úradu', d.doplatokDane > 0 ? `Suma: ${f(d.doplatokDane)} — do 31.3.2026` : 'Preplatok — DÚ vráti automaticky'],
+          ['Uhraď zdravotné odvody z investícií svojej ZP', d.zo_investicie > 0 ? `Suma: ${f(d.zo_investicie)} — do 8 dní od podania DP` : 'Žiadne odvody z investícií'],
+          ['Archivuj doklady min. 5 rokov', 'Fiscal Report z XTB, Potvrdenie od zamestnávateľa, kópia DP'],
+        ].map((item, i) => `
+          <div class="check-item" id="ci${i}" onclick="toggleCheck(${i})">
+            <div class="check-box" id="cb${i}"></div>
+            <div>
+              <div class="check-title">${item[0]}</div>
+              <div class="check-desc">${item[1]}</div>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <!-- UŽITOČNÉ LINKY -->
+    <div class="dp-card">
+      <div class="dp-card-header">
+        <div class="dp-card-title">🔗 Užitočné odkazy</div>
+      </div>
+      <div class="links-grid">
+        <div class="link-card" onclick="window.open('https://www.financnasprava.sk/sk/elektronicke-sluzby/verejne-sluzby/danove-priznania','_blank')">
+          <div class="link-icon">🏛</div>
+          <div><div class="link-title">Finančná správa SR</div><div class="link-sub">Podanie DP online · financnasprava.sk</div></div>
+        </div>
+        <div class="link-card" onclick="window.open('https://www.financnasprava.sk/sk/pre-media/tlacove-spravy/archiv-tlacovych-sprav/detail-tlacovej-spravy/_zverejnenie-vzoru-dane-z-prijmov','_blank')">
+          <div class="link-icon">📄</div>
+          <div><div class="link-title">Formulár DP typ B 2025</div><div class="link-sub">Aktuálny vzor tlačiva</div></div>
+        </div>
+        <div class="link-card" onclick="window.open('https://www.nbs.sk/sk/statisticke-udaje/kurzovy-listok','_blank')">
+          <div class="link-icon">💱</div>
+          <div><div class="link-title">Kurzy NBS</div><div class="link-sub">Historické kurzy pre prepočet mien</div></div>
+        </div>
+        <div class="link-card" onclick="window.open('https://www.xbrokers.sk/','_blank')">
+          <div class="link-icon">👨‍💼</div>
+          <div><div class="link-title">Daňový poradca</div><div class="link-sub">Odporúčame pri CFD + zahraničných dividendách</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="warning-box">
+      <span class="warning-box-icon">⚠️</span>
+      <span>Tieto podklady sú <b>orientačné</b> a nenahradzujú poradenstvo daňového poradcu. Čísla v riadkoch DP sa môžu líšiť podľa konkrétnej situácie (zahraničné príjmy, zápočet dane zaplatenej v zahraničí, odpočet príspevkov DDS/III. pilier). Vždy si skontroluj finálne hodnoty s aktuálnym formulárom na <b>financnasprava.sk</b>.</span>
+    </div>
+
+  </div>`;
+}
+
+// Checklist toggle
+const checkState = {};
+function toggleCheck(i) {
+  checkState[i] = !checkState[i];
+  const item = document.getElementById('ci' + i);
+  const box  = document.getElementById('cb' + i);
+  item.classList.toggle('checked', checkState[i]);
+  box.textContent = checkState[i] ? '✓' : '';
+}
+
+// Copy DP values to clipboard
+function copyDP() {
+  const d = calcDan();
+  const inv = parsedData ? calcAll(parsedData) : null;
+  const f = fmtEur;
+  const lines = [
+    `NUMO — PODKLADY PRE DP TYP B — ${parsedData?.period?.split('/')[0] || '2025'}`,
+    `Meno: ${parsedData?.name || '—'}`,
+    ``,
+    `§ 5 — ZAMESTNANIE`,
+    `Riad. 01 Hrubý príjem: ${f(d.hrubý5)}`,
+    `Riad. 05 Odvody:       ${f(d.odvody5)}`,
+    `Riad. 06 ZD § 5:       ${f(d.zd5_pred)}`,
+    `Riad. 09 Preddavky:    ${f(d.predd5)}`,
+    ``,
+    `§ 7 — DIVIDENDY`,
+    `Riad. 08 ZD § 7:       ${f(d.zd7)}`,
+    ``,
+    `§ 8 — AKCIE / ETF / CFD`,
+    `Predajný výnos:        ${inv ? f(inv.stc.totalSaleVal) : '—'}`,
+    `Obst. náklady:         ${inv ? f(Math.abs(inv.stc.totalPurchaseVal)+Math.abs(inv.stc.totalCommission)) : '—'}`,
+    `CFD Net P/L:           ${inv ? f(Math.max(0,inv.cfd.netPL)) : '—'}`,
+    `Riad. 10 ZD § 8:       ${f(d.zd8)}`,
+    ``,
+    `VÝPOČET DANE`,
+    `Riad. 44 ZD celkom:    ${f(d.celkovyZD)}`,
+    `Riad. 46 Daň (${d.sadzka}): ${f(d.dan)}`,
+    `Riad. 76 ${d.doplatokDane >= 0 ? 'Doplatok' : 'Preplatok'}: ${f(Math.abs(d.doplatokDane))}`,
+    ``,
+    `ZDRAVOTNÉ ODVODY (ZP)`,
+    `Vymeriavací základ:    ${f(d.zo_vymiar)}`,
+    `Odvody (14%):          ${f(d.zo_investicie)}`,
+  ].join('\n');
+
+  navigator.clipboard.writeText(lines).then(() => {
+    showToast('Hodnoty skopírované do schránky ✓', 'success');
+  }).catch(() => {
+    showToast('Kopírovanie zlyhalo — skús manuálne', 'error');
+  });
+}
+
+</script>
+</body>
+</html>

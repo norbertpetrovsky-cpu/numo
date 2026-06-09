@@ -3074,19 +3074,13 @@ function resetApp() {
   showScreen('home');
 }
 
-// Init — hash routing aware
+// Init — vždy začni na landing
 window.addEventListener('DOMContentLoaded', () => {
   const hash = window.location.hash.replace('#', '');
-  if (hash && VALID_SCREENS.includes(hash)) {
-    // Has valid hash — go there (except dashboard needs data)
-    if (hash === 'dashboard' && !parsedData) {
-      showScreen(numoState.onboardingDone ? 'home' : 'landing', false);
-    } else {
-      showScreen(hash, false);
-    }
+  if (hash && VALID_SCREENS.includes(hash) && hash !== 'landing') {
+    showScreen(hash, false);
   } else {
-    // No hash — decide based on onboarding state
-    showScreen(numoState.onboardingDone ? 'home' : 'landing');
+    showScreen('landing', false);
   }
 });
 

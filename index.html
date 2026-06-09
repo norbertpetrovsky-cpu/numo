@@ -1,4 +1,4 @@
-<!-- Numo v9 -->
+<!-- Numo v10 -->
 <!DOCTYPE html>
 <html lang="sk">
 <head>
@@ -1400,6 +1400,136 @@
     .dp-row-val { color: #000 !important; font-weight: bold !important; }
   }
 
+  /* ── POROVNÁVAČ ── */
+  #porovnavacScreen { display: none; min-height: 100vh; background: var(--bg); animation: fadeUp 0.3s ease; }
+  .porv-wrap { max-width: 1100px; margin: 0 auto; padding: 0 24px 48px; }
+
+  .porv-nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 0; margin-bottom: 8px; gap: 12px;
+  }
+  .porv-nav-logo { display: flex; align-items: center; gap: 8px; }
+  .porv-nav-icon {
+    width: 30px; height: 30px; border-radius: 7px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 13px; color: #000;
+  }
+  .porv-nav-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; }
+  .porv-nav-ver {
+    font-size: 10px; font-family: 'DM Mono', monospace; color: var(--text3);
+    background: var(--surface2); border: 1px solid var(--border2);
+    padding: 1px 5px; border-radius: 4px; margin-left: 4px;
+  }
+  .porv-nav-title { font-size: 12px; color: var(--text2); font-family: 'DM Mono', monospace; }
+  .porv-back-btn {
+    font-size: 12px; color: var(--text2); background: var(--surface2);
+    border: 1px solid var(--border2); padding: 6px 14px; border-radius: 7px;
+    cursor: pointer; transition: all 0.15s; font-family: 'Syne', sans-serif; font-weight: 600;
+  }
+  .porv-back-btn:hover { color: var(--text); border-color: var(--text3); }
+
+  .porv-hero { text-align: center; padding: 24px 0 20px; }
+  .porv-hero-title { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+  .porv-hero-sub { font-size: 14px; color: var(--text2); }
+
+  .porv-controls {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 20px 24px; margin-bottom: 24px;
+    display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start;
+  }
+  .porv-mode-wrap { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
+  .porv-mode-label { font-size: 11px; color: var(--text2); font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: 0.05em; }
+  .porv-mode-tabs { display: flex; gap: 4px; background: var(--surface2); border-radius: 8px; padding: 3px; border: 1px solid var(--border2); }
+  .porv-mode-tab {
+    padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 600;
+    color: var(--text2); background: transparent; border: none; cursor: pointer; transition: all 0.15s;
+    font-family: 'Syne', sans-serif;
+  }
+  .porv-mode-tab.active { background: var(--surface); color: var(--text); border: 1px solid var(--border2); }
+
+  .porv-input-wrap { flex: 1; min-width: 260px; }
+  .porv-input-label { font-size: 11px; color: var(--text2); font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+  .porv-input-row { display: flex; flex-direction: column; gap: 10px; }
+  .porv-input {
+    background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: 8px; padding: 10px 14px; color: var(--text);
+    font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700;
+    width: 200px; outline: none; transition: border-color 0.2s;
+    -moz-appearance: textfield;
+  }
+  .porv-input::-webkit-outer-spin-button, .porv-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+  .porv-input:focus { border-color: var(--accent); }
+
+  .porv-slider-wrap { width: 100%; }
+  .porv-slider {
+    width: 100%; accent-color: var(--accent); height: 4px; cursor: pointer;
+  }
+  .porv-slider-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--text3); font-family: 'DM Mono', monospace; margin-top: 4px; }
+
+  .porv-cards { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 20px; }
+  @media (max-width: 800px) { .porv-cards { grid-template-columns: 1fr; } }
+
+  .porv-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); overflow: hidden; position: relative;
+    transition: border-color 0.2s;
+  }
+  .porv-winner { border-color: var(--accent); box-shadow: 0 0 24px rgba(0,212,170,0.1); }
+  .porv-winner-badge {
+    position: absolute; top: 10px; right: 10px;
+    background: var(--accent); color: #000; font-size: 10px; font-weight: 700;
+    font-family: 'DM Mono', monospace; padding: 3px 9px; border-radius: 5px;
+  }
+  .porv-card-head {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 16px; border-bottom: 1px solid var(--border);
+  }
+  .porv-card-icon { font-size: 20px; }
+  .porv-card-label { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; }
+  .porv-card-body { padding: 16px; }
+  .porv-card-main { margin-bottom: 12px; }
+  .porv-card-main-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; font-family: 'DM Mono', monospace; margin-bottom: 4px; }
+  .porv-card-main-val { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800; line-height: 1; }
+  .porv-bar-wrap { background: var(--surface2); border-radius: 4px; height: 5px; margin-bottom: 14px; overflow: hidden; }
+  .porv-bar { height: 5px; border-radius: 4px; transition: width 0.4s ease; }
+  .porv-card-row {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 11px; padding: 5px 0; border-top: 1px solid var(--border);
+    color: var(--text2); gap: 8px;
+  }
+  .porv-card-row span:last-child { font-family: 'DM Mono', monospace; font-weight: 500; white-space: nowrap; }
+
+  .porv-detail-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); overflow: hidden;
+  }
+  .porv-detail-title {
+    padding: 14px 20px; border-bottom: 1px solid var(--border);
+    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px;
+    background: var(--surface2);
+  }
+  .porv-detail-table-wrap { overflow-x: auto; }
+  .porv-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .porv-table th {
+    background: var(--surface2); padding: 10px 16px; text-align: left;
+    font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text2);
+    border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+  .porv-table td {
+    padding: 9px 16px; border-bottom: 1px solid var(--border);
+    font-family: 'DM Mono', monospace; font-size: 11px; white-space: nowrap;
+  }
+  .porv-table tr:hover td { background: var(--surface2); }
+  .porv-table td:first-child { color: var(--text2); font-family: 'DM Sans', sans-serif; font-size: 12px; }
+  .porv-total-row td { font-weight: 700; background: rgba(0,212,170,0.04); color: var(--text); font-size: 12px; }
+
+  .porv-disclaimer {
+    margin-top: 16px; padding: 12px 16px;
+    background: rgba(255,196,67,0.06); border: 1px solid rgba(255,196,67,0.18);
+    border-radius: var(--radius); font-size: 11px; color: var(--text2); line-height: 1.6;
+  }
+
   /* ── ZAMESTNANIE FORM ── */
   #zamestnanieScreen { animation: fadeUp 0.3s ease; }
 
@@ -1571,7 +1701,7 @@
     <div class="landing-nav-logo" onclick="showScreen('landing')" style="cursor:pointer" title="Domov">
       <div class="landing-nav-logo-icon">N</div>
       <span class="landing-nav-name">Numo</span>
-      <span class="landing-nav-ver">v9</span>
+      <span class="landing-nav-ver">v10</span>
     </div>
     <div class="landing-nav-right">
       <button class="btn-landing-ghost" onclick="enterApp()">Prihlásiť sa</button>
@@ -1652,12 +1782,15 @@
   </div>
 </div><!-- /landingScreen -->
 
+<!-- POROVNÁVAČ SCREEN -->
+<div id="porovnavacScreen"></div>
+
 <!-- HEADER -->
 <header class="header">
   <div class="logo" onclick="showScreen('landing')" style="cursor:pointer" title="Domov">
     <div class="logo-icon">N</div>
     <div>
-      <div class="logo-text">Numo <span style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);font-weight:400;margin-left:4px;background:var(--surface2);border:1px solid var(--border2);padding:1px 5px;border-radius:4px">v9</span></div>
+      <div class="logo-text">Numo <span style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);font-weight:400;margin-left:4px;background:var(--surface2);border:1px solid var(--border2);padding:1px 5px;border-radius:4px">v10</span></div>
       <div class="logo-sub">Tvoje financie, jasne</div>
     </div>
   </div>
@@ -1700,7 +1833,7 @@
       <div class="home-nav-logo-icon">N</div>
       <div>
         <span class="home-nav-logo-name">Numo</span>
-        <span class="home-nav-logo-ver">v9</span>
+        <span class="home-nav-logo-ver">v10</span>
       </div>
     </div>
     <div class="home-nav-links">
@@ -1925,7 +2058,7 @@ function saveState() {
 }
 
 // ── SCREEN MANAGEMENT + HASH ROUTING ──
-const VALID_SCREENS = ['landing', 'home', 'upload', 'dashboard'];
+const VALID_SCREENS = ['landing', 'home', 'upload', 'dashboard', 'porovnavac'];
 
 function showScreen(name, pushHash = true) {
   // Hide all screens
@@ -1934,6 +2067,7 @@ function showScreen(name, pushHash = true) {
   document.getElementById('homeScreen').style.display = 'none';
   document.getElementById('homeScreen').classList.remove('show');
   document.getElementById('uploadScreen').style.display = 'none';
+  document.getElementById('porovnavacScreen').style.display = 'none';
   const dash = document.getElementById('dashboard');
   if (dash) dash.style.display = 'none';
 
@@ -1970,6 +2104,11 @@ function showScreen(name, pushHash = true) {
     if (dash) { dash.style.display = 'block'; dash.classList.add('show'); }
     if (header) header.style.display = 'flex';
     if (stepsBar) stepsBar.style.display = 'flex';
+  } else if (name === 'porovnavac') {
+    document.getElementById('porovnavacScreen').style.display = 'block';
+    if (header) header.style.display = 'none';
+    if (stepsBar) stepsBar.style.display = 'none';
+    renderPorovnavac();
   }
 }
 
@@ -2148,7 +2287,7 @@ function renderModules() {
     { icon: 'ti-file-text', iconBg: 'rgba(0,212,170,0.12)', iconColor: 'var(--accent)', name: 'Daňové priznanie', desc: 'FO typ A a typ B', pill: parsedData ? 'rozpracované' : 'aktívne', pillCls: parsedData ? 'pill-prog' : 'pill-active', profiles: ['zamestnanec','investor','szco','sro'], action: "showScreen('upload')" },
     { icon: 'ti-trending-up', iconBg: 'rgba(0,153,255,0.12)', iconColor: 'var(--accent2)', name: 'Investície', desc: 'XTB, IBKR, Revolut', pill: 'aktívne', pillCls: 'pill-active', profiles: ['investor'], action: "showScreen('upload')" },
     { icon: 'ti-briefcase', iconBg: 'rgba(255,196,67,0.12)', iconColor: 'var(--yellow)', name: 'SZČO & Odvody', desc: 'Živnosť, preddavky', pill: 'v11', pillCls: 'pill-soon', profiles: ['szco'], action: "showToast('Modul SZČO príde vo v11','success')" },
-    { icon: 'ti-calculator', iconBg: 'rgba(0,201,122,0.12)', iconColor: 'var(--green)', name: 'Kalkulačky', desc: 'Mzda, odvody, daň', pill: 'v10', pillCls: 'pill-soon', profiles: ['zamestnanec','szco','sro'], action: "showToast('Kalkulačky prídu vo v10','success')" },
+    { icon: 'ti-calculator', iconBg: 'rgba(0,201,122,0.12)', iconColor: 'var(--green)', name: 'Kalkulačky', desc: 'Zamestnanec vs. Živnostník', pill: 'aktívne', pillCls: 'pill-active', profiles: ['zamestnanec','szco','sro'], action: "showScreen('porovnavac')" },
     { icon: 'ti-receipt', iconBg: 'rgba(138,92,246,0.12)', iconColor: '#a78bfa', name: 'Faktúry', desc: 'Vystavenie & evidencia', pill: 'v12', pillCls: 'pill-soon', profiles: ['szco','sro'], action: "showToast('Faktúry prídu vo v12','success')" },
     { icon: 'ti-building', iconBg: 'rgba(255,107,53,0.12)', iconColor: 'var(--accent3)', name: 'S.r.o.', desc: 'DPH, mzdy, výkazy', pill: 'v16', pillCls: 'pill-soon', profiles: ['sro'], action: "showToast('S.r.o. modul príde vo v16','success')" },
   ];
@@ -4272,6 +4411,267 @@ function copyDP() {
     showToast('Kopírovanie zlyhalo — skús manuálne', 'error');
   });
 }
+// ═══════════════════════════════════════════════
+//  POROVNÁVAČ SCENÁROV
+// ═══════════════════════════════════════════════
+
+// 2025 constants
+const P_NEZDANITELNA = 4961.40;
+const P_HRANICA_19   = 41445.46;
+const P_PAUSALNE_PCT = 0.60;       // 60% paušálne výdavky (max 20 000 EUR)
+const P_PAUSALNE_MAX = 20000;
+const P_ZO_ZAM_ZAMESTNÁVATEĽ = 0.352; // sociálne+zdravotné zamestnávateľ ~35.2%
+const P_ZO_ZAM_ZAMESTNANEC   = 0.134; // sociálne+zdravotné zamestnanec ~13.4%
+const P_ZO_SZCO_ZDRAVOTNE    = 0.14;  // zdravotné SZČO
+const P_ZO_SZCO_SOCIALNE     = 0.299; // sociálne SZČO (po 1.7.2024)
+const P_MIN_ZO_ZDRAVOTNE     = 97.80; // min. zdravotné odvody/mes 2025
+const P_MIN_ZO_SOCIALNE      = 216.13;// min. sociálne odvody/mes 2025
+
+let porvInput = { mode: 'naklad', suma: 3000 };
+
+function calcZamestnanec(suma, mode) {
+  let hruba, nakladFirmy;
+  if (mode === 'naklad') {
+    nakladFirmy = suma;
+    hruba = suma / (1 + P_ZO_ZAM_ZAMESTNÁVATEĽ);
+  } else {
+    hruba = suma;
+    nakladFirmy = suma * (1 + P_ZO_ZAM_ZAMESTNÁVATEĽ);
+  }
+  const odvodyZamestnanca = hruba * P_ZO_ZAM_ZAMESTNANEC;
+  const zd = Math.max(0, hruba - odvodyZamestnanca - P_NEZDANITELNA / 12);
+  const dan = zd <= P_HRANICA_19 / 12 ? zd * 0.19 : (P_HRANICA_19 / 12) * 0.19 + (zd - P_HRANICA_19 / 12) * 0.25;
+  const cista = hruba - odvodyZamestnanca - dan;
+  const efektivna = 1 - cista / nakladFirmy;
+  return { hruba, nakladFirmy, odvodyZamestnanca, odvodyZamestnávateľ: nakladFirmy - hruba, dan, cista, efektivna };
+}
+
+function calcSzco(suma, mode) {
+  // suma = fakturovaná suma (príjem) / mesačne
+  let prijem;
+  if (mode === 'naklad') {
+    // pre SZČO náklad firmy = fakturovaná suma (nie sú odvody zamestnávateľa)
+    prijem = suma;
+  } else {
+    prijem = suma;
+  }
+  const pausalne = Math.min(prijem * 12 * P_PAUSALNE_PCT, P_PAUSALNE_MAX) / 12;
+  const zdRocny = Math.max(0, (prijem - pausalne) * 12);
+  // Odvody SZČO (minimálne)
+  const zdravotne = Math.max(prijem * P_ZO_SZCO_ZDRAVOTNE, P_MIN_ZO_ZDRAVOTNE);
+  const socialne = Math.max(prijem * P_ZO_SZCO_SOCIALNE, P_MIN_ZO_SOCIALNE);
+  const odvodyMes = zdravotne + socialne;
+  const zdPoOdvodoch = Math.max(0, zdRocny - odvodyMes * 12);
+  const zdPoNezdanitelnej = Math.max(0, zdPoOdvodoch - P_NEZDANITELNA);
+  let dan = 0;
+  if (zdPoNezdanitelnej <= P_HRANICA_19) dan = zdPoNezdanitelnej * 0.19;
+  else dan = P_HRANICA_19 * 0.19 + (zdPoNezdanitelnej - P_HRANICA_19) * 0.25;
+  const danMes = dan / 12;
+  const cista = prijem - odvodyMes - danMes;
+  const efektivna = 1 - cista / prijem;
+  return { prijem, pausalne, odvodyMes, zdravotne, socialne, danMes, cista, efektivna };
+}
+
+function calcSro(suma, mode) {
+  // Konateľ s.r.o. — odmena konateľa (ako zamestnanec) alebo dividendy
+  // Zjednodušený model: príjem cez odmenu konateľa
+  let prijem;
+  if (mode === 'naklad') {
+    prijem = suma / (1 + P_ZO_ZAM_ZAMESTNÁVATEĽ);
+  } else {
+    prijem = suma;
+  }
+  const odvodyKonatel = prijem * P_ZO_ZAM_ZAMESTNANEC;
+  const odvodyFirma = prijem * P_ZO_ZAM_ZAMESTNÁVATEĽ;
+  // Daň z príjmu PO: zisk firmy = prijem pred odvodmi − výplata konateľa − odvody firmy (už zarátané)
+  // Zisk firmy = 0 (všetko ide cez odmenu) — daň platí len konateľ ako FO
+  const zd = Math.max(0, prijem - odvodyKonatel - P_NEZDANITELNA / 12);
+  const dan = zd <= P_HRANICA_19 / 12 ? zd * 0.19 : (P_HRANICA_19 / 12) * 0.19 + (zd - P_HRANICA_19 / 12) * 0.25;
+  const cista = prijem - odvodyKonatel - dan;
+  const nakladFirmy = mode === 'naklad' ? suma : prijem * (1 + P_ZO_ZAM_ZAMESTNÁVATEĽ);
+  const efektivna = 1 - cista / nakladFirmy;
+  return { prijem, odvodyKonatel, odvodyFirma, dan, cista, efektivna, nakladFirmy };
+}
+
+function renderPorovnavac() {
+  const screen = document.getElementById('porovnavacScreen');
+  screen.innerHTML = buildPorovnavacHTML();
+  updatePorovnavac();
+}
+
+function buildPorovnavacHTML() {
+  return `
+  <div class="porv-wrap">
+    <!-- NAV -->
+    <div class="porv-nav">
+      <div class="porv-nav-logo" onclick="showScreen('home')" style="cursor:pointer">
+        <div class="porv-nav-icon">N</div>
+        <span class="porv-nav-name">Numo</span>
+        <span class="porv-nav-ver">v10</span>
+      </div>
+      <div class="porv-nav-title">Porovnávač scenárov</div>
+      <button class="porv-back-btn" onclick="showScreen('home')">← Späť na prehľad</button>
+    </div>
+
+    <!-- HERO -->
+    <div class="porv-hero">
+      <div class="porv-hero-title">Zamestnanec, Živnostník alebo s.r.o.?</div>
+      <div class="porv-hero-sub">Zadaj sumu a okamžite uvidíš čo ti reálne zostane v každom scenári</div>
+    </div>
+
+    <!-- CONTROLS -->
+    <div class="porv-controls">
+      <div class="porv-mode-wrap">
+        <div class="porv-mode-label">Typ sumy:</div>
+        <div class="porv-mode-tabs">
+          <button class="porv-mode-tab active" id="modeNaklad" onclick="setMode('naklad')">Náklad firmy</button>
+          <button class="porv-mode-tab" id="modeHruba" onclick="setMode('hruba')">Hrubý príjem / Faktúra</button>
+        </div>
+      </div>
+      <div class="porv-input-wrap">
+        <div class="porv-input-label" id="inputLabel">Mesačný náklad firmy (EUR):</div>
+        <div class="porv-input-row">
+          <input class="porv-input" type="number" id="porvSuma" value="3000" min="0" max="50000" step="100"
+            oninput="porvInput.suma = parseFloat(this.value)||0; updatePorovnavac()">
+          <div class="porv-slider-wrap">
+            <input type="range" class="porv-slider" id="porvSlider" min="500" max="20000" step="100" value="3000"
+              oninput="document.getElementById('porvSuma').value=this.value; porvInput.suma=parseFloat(this.value); updatePorovnavac()">
+            <div class="porv-slider-labels"><span>500</span><span>5 000</span><span>10 000</span><span>20 000</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARDS -->
+    <div class="porv-cards" id="porvCards"><!-- filled by JS --></div>
+
+    <!-- DETAIL TABLE -->
+    <div class="porv-detail" id="porvDetail"><!-- filled by JS --></div>
+
+    <!-- DISCLAIMER -->
+    <div class="porv-disclaimer">
+      ⚠ Orientačný výpočet pre rok 2025. Nezohľadňuje všetky individuálne situácie (DDS, príspevky na III. pilier, minimálna mzda, živnostenský list). Vždy konzultuj s daňovým poradcom pred rozhodnutím.
+    </div>
+  </div>`;
+}
+
+function setMode(mode) {
+  porvInput.mode = mode;
+  document.getElementById('modeNaklad').classList.toggle('active', mode === 'naklad');
+  document.getElementById('modeHruba').classList.toggle('active', mode === 'hruba');
+  document.getElementById('inputLabel').textContent =
+    mode === 'naklad' ? 'Mesačný náklad firmy (EUR):' : 'Hrubý príjem / Mesačná faktúra (EUR):';
+  updatePorovnavac();
+}
+
+function updatePorovnavac() {
+  const suma = porvInput.suma || 0;
+  const mode = porvInput.mode;
+
+  // sync slider
+  const slider = document.getElementById('porvSlider');
+  if (slider) slider.value = Math.min(suma, 20000);
+
+  const zam = calcZamestnanec(suma, mode);
+  const szco = calcSzco(suma, mode);
+  const sro = calcSro(suma, mode);
+
+  const cards = [
+    { key: 'zam', label: 'Zamestnanec', icon: 'ti-briefcase', color: 'var(--accent2)', bg: 'rgba(0,153,255,0.08)', cista: zam.cista, efektivna: zam.efektivna, data: zam },
+    { key: 'szco', label: 'Živnostník (SZČO)', icon: 'ti-tool', color: 'var(--accent)', bg: 'rgba(0,212,170,0.08)', cista: szco.cista, efektivna: szco.efektivna, data: szco },
+    { key: 'sro', label: 'Konateľ s.r.o.', icon: 'ti-building', color: 'var(--yellow)', bg: 'rgba(255,196,67,0.08)', cista: sro.cista, efektivna: sro.efektivna, data: sro },
+  ];
+
+  const maxCista = Math.max(...cards.map(c => c.cista));
+  const f = n => n != null ? Math.abs(n).toLocaleString('sk-SK', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—';
+
+  const cardsHTML = cards.map(c => {
+    const isWinner = c.cista === maxCista && maxCista > 0;
+    const pct = maxCista > 0 ? (c.cista / maxCista * 100) : 0;
+    return `
+    <div class="porv-card ${isWinner ? 'porv-winner' : ''}">
+      ${isWinner ? '<div class="porv-winner-badge">✦ Najvyšší čistý príjem</div>' : ''}
+      <div class="porv-card-head" style="background:${c.bg}">
+        <div class="porv-card-icon" style="color:${c.color}"><i class="ti ${c.icon}"></i></div>
+        <div class="porv-card-label">${c.label}</div>
+      </div>
+      <div class="porv-card-body">
+        <div class="porv-card-main">
+          <div class="porv-card-main-label">Čistý mesačný príjem</div>
+          <div class="porv-card-main-val" style="color:${isWinner ? c.color : 'var(--text)'}">${f(c.cista)} EUR</div>
+        </div>
+        <div class="porv-bar-wrap">
+          <div class="porv-bar" style="width:${pct}%;background:${c.color}"></div>
+        </div>
+        <div class="porv-card-row"><span>Efektívna sadzba odvodov+daň</span><span class="neg">${(c.efektivna * 100).toFixed(1)} %</span></div>
+        <div class="porv-card-row"><span>Ročný čistý príjem</span><span class="${c.cista >= 0 ? 'pos' : 'neg'}">${f(c.cista * 12)} EUR</span></div>
+        ${isWinner && cards.filter(x => x.cista === maxCista).length < cards.length ? `
+        <div class="porv-card-row" style="color:var(--accent)">
+          <span>Výhoda vs. najhorší scenár</span>
+          <span class="pos">+${f(maxCista - Math.min(...cards.map(x => x.cista)))} EUR/mes</span>
+        </div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+
+  const cardsEl = document.getElementById('porvCards');
+  if (cardsEl) cardsEl.innerHTML = cardsHTML;
+
+  // Detail table
+  const detailHTML = `
+  <div class="porv-detail-card">
+    <div class="porv-detail-title">Podrobný rozpis mesačne</div>
+    <div class="porv-detail-table-wrap">
+      <table class="porv-table">
+        <thead><tr>
+          <th>Položka</th>
+          <th>Zamestnanec</th>
+          <th>Živnostník</th>
+          <th>Konateľ s.r.o.</th>
+        </tr></thead>
+        <tbody>
+          <tr><td>Náklad firmy / Fakturovaná suma</td>
+            <td>${f(zam.nakladFirmy)} EUR</td>
+            <td>${f(szco.prijem)} EUR</td>
+            <td>${f(sro.nakladFirmy)} EUR</td></tr>
+          <tr><td>Hrubá mzda / Príjem SZČO</td>
+            <td>${f(zam.hruba)} EUR</td>
+            <td>${f(szco.prijem)} EUR</td>
+            <td>${f(sro.prijem)} EUR</td></tr>
+          <tr><td>Odvody zamestnávateľa / firmy</td>
+            <td class="neg">−${f(zam.odvodyZamestnávateľ)} EUR</td>
+            <td class="neutral">—</td>
+            <td class="neg">−${f(sro.odvodyFirma)} EUR</td></tr>
+          <tr><td>Odvody zamestnanca / SZČO</td>
+            <td class="neg">−${f(zam.odvodyZamestnanca)} EUR</td>
+            <td class="neg">−${f(szco.odvodyMes)} EUR</td>
+            <td class="neg">−${f(sro.odvodyKonatel)} EUR</td></tr>
+          <tr><td>Paušálne výdavky (60%)</td>
+            <td class="neutral">—</td>
+            <td class="pos">−${f(szco.pausalne)} EUR</td>
+            <td class="neutral">—</td></tr>
+          <tr><td>Daň z príjmu</td>
+            <td class="neg">−${f(zam.dan)} EUR</td>
+            <td class="neg">−${f(szco.danMes)} EUR</td>
+            <td class="neg">−${f(sro.dan)} EUR</td></tr>
+          <tr class="porv-total-row"><td>✦ Čistý mesačný príjem</td>
+            <td class="${zam.cista === maxCista ? 'pos' : ''}">${f(zam.cista)} EUR</td>
+            <td class="${szco.cista === maxCista ? 'pos' : ''}">${f(szco.cista)} EUR</td>
+            <td class="${sro.cista === maxCista ? 'pos' : ''}">${f(sro.cista)} EUR</td></tr>
+          <tr class="porv-total-row"><td>✦ Čistý ročný príjem</td>
+            <td>${f(zam.cista * 12)} EUR</td>
+            <td>${f(szco.cista * 12)} EUR</td>
+            <td>${f(sro.cista * 12)} EUR</td></tr>
+          <tr><td>Efektívna sadzba (odvody+daň)</td>
+            <td class="neg">${(zam.efektivna * 100).toFixed(1)} %</td>
+            <td class="neg">${(szco.efektivna * 100).toFixed(1)} %</td>
+            <td class="neg">${(sro.efektivna * 100).toFixed(1)} %</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+
+  const detailEl = document.getElementById('porvDetail');
 
 </script>
 </body>

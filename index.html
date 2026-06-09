@@ -1,4 +1,4 @@
-<!-- Numo v8 -->
+<!-- Numo v9 -->
 <!DOCTYPE html>
 <html lang="sk">
 <head>
@@ -1571,7 +1571,7 @@
     <div class="landing-nav-logo" onclick="showScreen('landing')" style="cursor:pointer" title="Domov">
       <div class="landing-nav-logo-icon">N</div>
       <span class="landing-nav-name">Numo</span>
-      <span class="landing-nav-ver">v8</span>
+      <span class="landing-nav-ver">v9</span>
     </div>
     <div class="landing-nav-right">
       <button class="btn-landing-ghost" onclick="enterApp()">Prihlásiť sa</button>
@@ -1657,7 +1657,7 @@
   <div class="logo" onclick="showScreen('landing')" style="cursor:pointer" title="Domov">
     <div class="logo-icon">N</div>
     <div>
-      <div class="logo-text">Numo <span style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);font-weight:400;margin-left:4px;background:var(--surface2);border:1px solid var(--border2);padding:1px 5px;border-radius:4px">v8</span></div>
+      <div class="logo-text">Numo <span style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);font-weight:400;margin-left:4px;background:var(--surface2);border:1px solid var(--border2);padding:1px 5px;border-radius:4px">v9</span></div>
       <div class="logo-sub">Tvoje financie, jasne</div>
     </div>
   </div>
@@ -1700,7 +1700,7 @@
       <div class="home-nav-logo-icon">N</div>
       <div>
         <span class="home-nav-logo-name">Numo</span>
-        <span class="home-nav-logo-ver">v8</span>
+        <span class="home-nav-logo-ver">v9</span>
       </div>
     </div>
     <div class="home-nav-links">
@@ -1924,8 +1924,11 @@ function saveState() {
   localStorage.setItem('numo_state', JSON.stringify(numoState));
 }
 
-// ── SCREEN MANAGEMENT ──
-function showScreen(name) {
+// ── SCREEN MANAGEMENT + HASH ROUTING ──
+const VALID_SCREENS = ['landing', 'home', 'upload', 'dashboard'];
+
+function showScreen(name, pushHash = true) {
+  // Hide all screens
   document.getElementById('landingScreen').style.display = 'none';
   document.getElementById('landingScreen').classList.remove('show');
   document.getElementById('homeScreen').style.display = 'none';
@@ -1936,6 +1939,16 @@ function showScreen(name) {
 
   const header = document.querySelector('.header');
   const stepsBar = document.querySelector('.steps-bar');
+
+  // Update URL hash safely
+  if (pushHash) {
+    try {
+      history.pushState(null, '', '#' + name);
+    } catch(e) {
+      // Fallback pre sandboxované prostredia (Claude.ai preview)
+      window.location.hash = name;
+    }
+  }
 
   if (name === 'landing') {
     document.getElementById('landingScreen').style.display = 'flex';
@@ -1954,11 +1967,19 @@ function showScreen(name) {
     if (header) header.style.display = 'flex';
     if (stepsBar) stepsBar.style.display = 'flex';
   } else if (name === 'dashboard') {
-    if (dash) dash.style.display = 'block';
+    if (dash) { dash.style.display = 'block'; dash.classList.add('show'); }
     if (header) header.style.display = 'flex';
     if (stepsBar) stepsBar.style.display = 'flex';
   }
 }
+
+// Back/Forward browser buttons
+window.addEventListener('popstate', () => {
+  const hash = window.location.hash.replace('#', '') || 'landing';
+  const screen = VALID_SCREENS.includes(hash) ? hash : 'landing';
+  // Redirect dashboard to home if no data loaded (e.g. after refresh)
+  showScreen(screen === 'dashboard' && !parsedData ? 'home' : screen, false);
+});
 
 function goHome() { showScreen('home'); }
 
@@ -1975,6 +1996,8 @@ function landingToggleProfile(chip) {
 }
 
 function restoreLandingProfiles() {
+  // Reset first
+  document.querySelectorAll('#landingScreen .lp-chip').forEach(c => c.classList.remove('selected'));
   numoState.profiles.forEach(p => {
     const chip = document.querySelector(`#landingScreen .lp-chip[data-profile="${p}"]`);
     if (chip) chip.classList.add('selected');
@@ -2912,12 +2935,19 @@ function resetApp() {
   showScreen('home');
 }
 
-// Init — landing pre nových, home pre vracajúcich sa
+// Init — hash routing aware
 window.addEventListener('DOMContentLoaded', () => {
-  if (numoState.onboardingDone) {
-    showScreen('home');
+  const hash = window.location.hash.replace('#', '');
+  if (hash && VALID_SCREENS.includes(hash)) {
+    // Has valid hash — go there (except dashboard needs data)
+    if (hash === 'dashboard' && !parsedData) {
+      showScreen(numoState.onboardingDone ? 'home' : 'landing', false);
+    } else {
+      showScreen(hash, false);
+    }
   } else {
-    showScreen('landing');
+    // No hash — decide based on onboarding state
+    showScreen(numoState.onboardingDone ? 'home' : 'landing');
   }
 });
 
